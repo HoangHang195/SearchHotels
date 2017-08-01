@@ -1,0 +1,1 @@
+angular.module('app.layout', ['ui.bootstrap.collapse', 'ui.router']);
