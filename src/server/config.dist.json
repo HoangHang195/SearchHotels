@@ -1,0 +1,9 @@
+{
+  "PORT": 3003,
+  "BASE_URL": "/api",
+
+  "mongodb": {
+    "host": "localhost",
+    "database": "SearchHotels"
+  }
+}
