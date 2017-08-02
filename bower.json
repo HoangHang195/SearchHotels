@@ -27,7 +27,9 @@
     "moment": "~2.12.0",
     "angular-ui-router": "~0.4.2",
     "toastr": "~2.1.2",
-    "angular-bootstrap": "~1.2.5"
+    "angular-bootstrap": "~1.2.5",
+    "ngGeolocation": "^0.0.8",
+    "google-maps": "^3.2.1"
   },
   "resolutions": {
     "angular": "~1.5.9"

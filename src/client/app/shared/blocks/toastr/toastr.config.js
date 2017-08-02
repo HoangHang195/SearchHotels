@@ -14,7 +14,7 @@
 
     var config = {
         appErrorPrefix: '[phui Error] ',
-        appTitle: 'phui'
+        appTitle: 'Search'
     };
 
     core.value('config', config);
