@@ -5,6 +5,11 @@
           <img ng-repeat='image in vm.images' ng-src='http://placehold.it/225x250&text={{image}}'>
           <iframe></iframe>
         </div>-->
+        <div>
+          <input id="address" type="textbox" value="Hà Nội" ng-model="address" ng-enter="vm.codeAddress()">
+          <input type="button" value="Tìm kiếm" ng-click='vm.codeAddress()'>
+        </div>
+
         <div id="map" ></div>
 
         <!--<div id="controlLeftWrapper">

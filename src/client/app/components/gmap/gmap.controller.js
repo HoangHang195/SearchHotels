@@ -13,25 +13,15 @@
 
         var vm = this;
         vm.title = 'Gmap';
+        vm.codeAddress = codeAddress;
 
         //google.maps.event.addDomListener(window, 'load', initMap);
 
         initMap();
+        // codeAddress();
         // zoomControl();
 
-        // vm.images = [1, 2, 3, 4, 5, 6, 7, 8];
-
-        // vm.loadMore = function () {
-        //     var last = vm.images[vm.images.length - 1];
-        //     for (var i = 1; i <= 100; i++) {
-        //         vm.images.push(last + i);
-        //     }
-        //     console.log(vm.images);
-        // };
-
-        
-
-        var map, infoWindow;
+        var map, infoWindow, geocoder;
         function initMap() {
             map = new google.maps.Map(document.getElementById('map'), {
                 center: { lat: 10.8482599, lng: 106.7841407 },
@@ -84,6 +74,29 @@
         }
 
 
+        function codeAddress() {
+
+            map = new google.maps.Map(document.getElementById('map'), {
+                // center: { lat: 10.8482599, lng: 106.7841407 },
+                zoom: 15
+            });
+           
+            var address = document.getElementById('address').value;
+            console.log("address: " + address);
+            geocoder = new google.maps.Geocoder();
+            geocoder.geocode({ 'address': address }, function (results, status) {
+                if (status == 'OK') {
+                    console.log('location: ' + results[0].geometry.location);
+                    map.setCenter(results[0].geometry.location);
+                    var marker = new google.maps.Marker({
+                        map: map,
+                        position: results[0].geometry.location
+                    });
+                } else {
+                    alert('Geocode was not successful for the following reason: ' + status);
+                }
+            });
+        }
         // function zoomControl() {
         //     var zoomInButton = document.getElementById('zoomIn');
         //     var zoomOutButton = document.getElementById('zoomOut');
