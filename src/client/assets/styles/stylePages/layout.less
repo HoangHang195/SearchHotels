@@ -1,6 +1,8 @@
-#layoutContainer{
+#layoutContent{
     width: 100%;
-    height: 550px;
+    height: 600px;
+    overflow-x: hidden;
+    overflow-y: scroll;
 }
 header, footer {
     // padding: 1em;
@@ -9,15 +11,12 @@ header, footer {
     // clear: left;
     text-align: center;
 }
-footer{
-    margin-bottom: -15px;
-    background-color: grey;
-}
+
 nav {
-    overflow: scroll;
+    overflow-y:  scroll;
     overflow-x: hidden;
     width: 100%;
-    height: 550px;
+    height: 600px;
     // float: left;
     // margin: 0;
     // padding: 1em;
@@ -25,7 +24,7 @@ nav {
 article {
     border-left: 1px solid gray;
     padding: 1em;
-    // overflow: hidden;
+    // overflow-y: scroll;
     width: 100%;
-    height: 550px;
+    height: 600px;
 }

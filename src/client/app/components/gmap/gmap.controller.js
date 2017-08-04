@@ -97,16 +97,7 @@
                 }
             });
         }
-        // function zoomControl() {
-        //     var zoomInButton = document.getElementById('zoomIn');
-        //     var zoomOutButton = document.getElementById('zoomOut');
-        //     google.maps.event.addDomListener(zoomInButton, 'click', function () {
-        //         map.setZoom(map.getZoom() + 1);
-        //     });
-        //     google.maps.event.addDomListener(zoomOutButton, 'click', function () {
-        //         map.setZoom(map.getZoom() - 1);
-        //     });
-        // }
+        
     }
 
 })();
