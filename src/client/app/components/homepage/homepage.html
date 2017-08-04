@@ -1,2 +1,23 @@
-<h1>Home page</h1>
-<div id="map" style="height: 600px; width: 1000px">Xin chào</div>
+<div id="homepageContainer">
+    <div class="row">
+        <h1 id="welcome">Welcome to Search Hotels Website</h1>
+        <div id="custom-search-input">
+            <div class="input-group col-md-10">
+                <input type="text" class="search-query form-control" placeholder="Nhập địa điểm cần tìm kiếm" />
+                <span class="input-group-btn" ui-sref-active="active">
+                    <button class="btn btn-danger" type="button" ui-sref="layout.gmap">
+                        <span class=" glyphicon glyphicon-search"></span>
+                    </button>
+                </span>
+            </div>
+            </br>
+            <div class="col-md-8">
+                <button id="btnCurrentPosition" class="btn btn-danger" type="button" ui-sref="layout.gmap">
+                    <span>Tìm quanh vị trí hiện tại</span>
+                </button>
+            </div>
+        </div>
+
+        
+    </div>
+</div>

@@ -3,7 +3,7 @@ angular.module('app.homepage')
 
 function homepageConfig($stateProvider) {
     $stateProvider
-        .state('layout.homepage', {
+        .state('homepage', {
             url: '/homepage',
             templateUrl: 'app/components/homepage/homepage.html',
             controller: 'HomePageController',

@@ -1,1 +1,1 @@
-angular.module('app.gmap', []);
+angular.module('app.gmap', ['infinite-scroll']);

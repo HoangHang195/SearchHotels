@@ -1,19 +1,24 @@
-<div id="container">
-
-    <header>
-        <h1>header</h1>
-    </header>
-
-    <nav>
-        <h1>Nav</h1>
-    </nav>
-
-    <article>
+<div id="layoutContainer" class="container">
+    <div class="row">
+        <header class="col-md-12">
+            <h1>header</h1>
+        </header>
+    </div>
+    <div class="row">
+        <div id="layoutContent">
+            <nav class="col-md-5">
+                <h1>Nav</h1>
+            </nav>
         
-        <ui-view></ui-view>
+            <article class="col-md-7">
+                <ui-view></ui-view>
+                
+            </article>
+        </div>
         
-    </article>
-
-    <footer>footer</footer>
+    </div>
+    <div class="row">
+        <footer class="col-md-12">footer</footer>
+    </div>
 
 </div>

@@ -7,6 +7,9 @@
         'app.dashboard',
         'app.homepage',
         'app.gmap',
+        'app.listhotels',
+
+        
 
         'ui.router',
         // 'angular-jwt',
@@ -18,8 +21,9 @@
         'blocks.exception',
         'blocks.logger',
         'blocks.router',
-        // 'infinite-scroll',
+        'infinite-scroll',
         // 'ngLess'
+        // 'ngInfiniteScroll',
     ]);
 
 })();
