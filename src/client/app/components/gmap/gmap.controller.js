@@ -19,6 +19,7 @@
 
         initMap();
         // codeAddress();
+        nearbySearch();
         // zoomControl();
 
         var map, infoWindow, geocoder;
@@ -80,7 +81,7 @@
                 // center: { lat: 10.8482599, lng: 106.7841407 },
                 zoom: 15
             });
-           
+
             var address = document.getElementById('address').value;
             console.log("address: " + address);
             geocoder = new google.maps.Geocoder();
@@ -92,12 +93,50 @@
                         map: map,
                         position: results[0].geometry.location
                     });
+
                 } else {
                     alert('Geocode was not successful for the following reason: ' + status);
                 }
             });
+            
         }
+
+        //nearbySearch
+        function nearbySearch() {
+            var pyrmont = { lat: 10.8482599, lng: 106.7841407 };
+            console.log('pyrmont: ' + pyrmont);
+            var service = new google.maps.places.PlacesService(map);
+            service.nearbySearch({
+                location: pyrmont,
+                radius: 1000,
+                type: ['hotels'], 
+            }, callback);
+        }
+
+        function callback(results, status) {
+            if (status === google.maps.places.PlacesServiceStatus.OK) {
+                for (var i = 0; i < results.length; i++) {
+                    createMarker(results[i]);
+                }
+            }
+        }
+
+        function createMarker(place) {
+            var placeLoc = place.geometry.location;
+            var marker = new google.maps.Marker({
+                map: map,
+                position: place.geometry.location
+            });
+
+            google.maps.event.addListener(marker, 'click', function () {
+                infowindow.setContent(place.name);
+                infowindow.open(map, this);
+            });
+        }
+
+
         
+
     }
 
 })();
