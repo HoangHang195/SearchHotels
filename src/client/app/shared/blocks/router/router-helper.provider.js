@@ -16,7 +16,7 @@
         };
 
         if (!(window.history && window.history.pushState)) {
-            window.location.hash = '/';
+            window.location.hash = '/listhotels';
         }
 
         $locationProvider.html5Mode(true);

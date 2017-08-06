@@ -13,7 +13,7 @@
     }
 
     var config = {
-        appErrorPrefix: '[phui Error] ',
+        appErrorPrefix: '[SearchHotels Error] ',
         appTitle: 'Search'
     };
 
