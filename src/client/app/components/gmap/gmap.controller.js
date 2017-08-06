@@ -45,7 +45,8 @@
                     var marker = new google.maps.Marker({
                         position: pos,
                         map: map,
-                        title: 'Hello World!'
+                        title: 'Hello World!',
+                        icon: '/src/client/assets/images/person-location.png'
                     });
 
                     var customMapType = new google.maps.StyledMapType([
@@ -108,9 +109,11 @@
             var service = new google.maps.places.PlacesService(map);
             service.nearbySearch({
                 location: pyrmont,
-                radius: 1000,
-                type: ['hotels'], 
+                radius: 6000,
+                // bounds: map.getBounds(),
+                types: ['lodging'], 
             }, callback);
+            
         }
 
         function callback(results, status) {
@@ -129,13 +132,13 @@
             });
 
             google.maps.event.addListener(marker, 'click', function () {
-                infowindow.setContent(place.name);
-                infowindow.open(map, this);
+                infoWindow.setContent(place.name);
+                infoWindow.open(map, this);
             });
         }
 
 
-        
+
 
     }
 
