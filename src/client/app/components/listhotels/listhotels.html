@@ -1,0 +1,76 @@
+<div ng-controller="ListHotelsController" data-ng-init='vm.loadCurrentPosition()'>
+    <!--<div infinite-scroll='vm.loadMore()' infinite-scroll-distance='1' class="scroll">
+        <img ng-repeat='image in vm.images' ng-src='http://placehold.it/225x250&text={{image}}'>
+        <iframe></iframe>
+    </div>-->
+    <div id="searchBar" data-ng-init='vm.initMap()' class="col-md-8">
+        <!--<div id="locationField">
+            <input id="autocomplete" placeholder="Enter a city" type="text" />
+        </div>-->
+        <div id="controls" class="col-md-2">
+            <select id="country">
+                <option value="all">All</option>
+                <option value="vn" selected >Việt Nam</option>
+                <option value="au">Australia</option>
+                <option value="br">Brazil</option>
+                <option value="ca">Canada</option>
+                <option value="fr">France</option>
+                <option value="de">Germany</option>
+                <option value="mx">Mexico</option>
+                <option value="nz">New Zealand</option>
+                <option value="it">Italy</option>
+                <option value="za">South Africa</option>
+                <option value="es">Spain</option>
+                <option value="pt">Portugal</option>
+                <option value="us">U.S.A.</option>
+                <option value="uk">United Kingdom</option>
+            </select>
+        </div>
+
+        <div class="input-group col-md-6" >
+            <input id="autocomplete" type="text" class="search-query form-control" ng-enter="vm.onPlaceChanged()" placeholder="Nhập địa điểm cần tìm kiếm" />
+            <span class="input-group-btn" ui-sref-active="active">
+                <button class="btn btn-danger" type="button" ng-click="vm.onPlaceChanged()">
+                    <span class=" glyphicon glyphicon-search"></span>
+                </button>
+            </span>
+        </div>
+
+    </div>
+
+    <div id="listing" class="col-md-6">
+        <table id="resultsTable">
+            <tbody id="results"></tbody>
+        </table>
+    </div>
+
+    <div id="map" class="col-md-6"></div>
+    
+
+    <div style="display: none">
+<div id="info-content">
+    <table>
+        <tr id="iw-url-row" class="iw_table_row">
+            <td id="iw-icon" class="iw_table_icon"></td>
+            <td id="iw-url"></td>
+        </tr>
+        <tr id="iw-address-row" class="iw_table_row">
+            <td class="iw_attribute_name">Address:</td>
+            <td id="iw-address"></td>
+        </tr>
+        <tr id="iw-phone-row" class="iw_table_row">
+            <td class="iw_attribute_name">Telephone:</td>
+            <td id="iw-phone"></td>
+        </tr>
+        <tr id="iw-rating-row" class="iw_table_row">
+            <td class="iw_attribute_name">Rating:</td>
+            <td id="iw-rating"></td>
+        </tr>
+        <tr id="iw-website-row" class="iw_table_row">
+            <td class="iw_attribute_name">Website:</td>
+            <td id="iw-website"></td>
+        </tr>
+    </table>
+</div>
+</div>
+</div>
