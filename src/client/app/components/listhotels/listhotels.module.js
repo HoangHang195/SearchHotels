@@ -1,1 +1,1 @@
-angular.module('app.listhotels', ['ui.bootstrap.collapse', 'ui.router']);
+angular.module('app.listhotels', ['ui.bootstrap.collapse', 'ui.router', 'services.directions']);

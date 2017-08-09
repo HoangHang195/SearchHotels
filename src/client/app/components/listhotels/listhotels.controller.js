@@ -4,8 +4,8 @@
     angular.module('app.listhotels')
         .controller('ListHotelsController', ListHotelsController);
 
-ListHotelsController.$inject = ['$q'];
-    function ListHotelsController($q) {
+ListHotelsController.$inject = ['$q', 'directionsSv'];
+    function ListHotelsController($q, directionsSv) {
         
         var vm = this;
         vm.countries = countries;
@@ -14,6 +14,9 @@ ListHotelsController.$inject = ['$q'];
         vm.loadCurrentPosition = loadCurrentPosition;
         var geocoder = new google.maps.Geocoder();
         vm.address = 1;
+        vm.test = test;
+        vm.origin;
+        vm.destination;
         
         var countries = {
                 'vn': {
@@ -111,100 +114,24 @@ ListHotelsController.$inject = ['$q'];
                 });
             places = new google.maps.places.PlacesService(map);
 
-            // autocomplete.addListener('place_changed', onPlaceChanged);
+            autocomplete.addListener('place_changed', onPlaceChanged);
 
             // Add a DOM event listener to react when the user selects a country.
             document.getElementById('country').addEventListener(
                 'change', setAutocompleteCountry);
         }
-
         
-        function loadCurrentPosition(){
-            map = new google.maps.Map(document.getElementById('map'), {
-                center: { lat: 10.8482599, lng: 106.7841407 },
-                zoom: 15
-            });
-            infoWindow = new google.maps.InfoWindow;
-            var deferred = $q.defer();
-            
-            if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(function (position) {
-                    var pos = {
-                        lat: position.coords.latitude,
-                        lng: position.coords.longitude
-                    };
-                   
-                    var place = pos;
-                    console.log('place geometry: ' + place);
-                    if (place) {
-                        map.panTo(place);
-                        map.setZoom(15);
-
-                        var promise = geocodeLatLng(pos);
-                        promise.then(function(){
-                            document.getElementById('autocomplete').value = vm.address;
-                        }, function(){
-                            alert("Loi roi");
-                        });
-                        
-                        console.log('geocode: ' + JSON.stringify(geocodeLatLng(pos)));
-                        document.getElementById('autocomplete').placeholder = vm.address;
-                        search();
-                    } else {
-                        document.getElementById('autocomplete').placeholder = 'Enter a city';
-                    }
-
-                }, function () {
-                    handleLocationError(true, infoWindow, map.getCenter());
-                });
-            }else {
-                // Browser doesn't support Geolocation
-                handleLocationError(false, infoWindow, map.getCenter());
-            }
-        }
-
-        function handleLocationError(browserHasGeolocation, infoWindow, pos) {
-            infoWindow.setPosition(pos);
-            infoWindow.setContent(browserHasGeolocation ?
-                'Error: The Geolocation service failed.' :
-                'Error: Your browser doesn\'t support geolocation.'
-            );
-            infoWindow.open(map);
-        }
-
-        function geocodeLatLng(currentPosition) {
-            var input = currentPosition;
-            // console.log('input: ' + (input.lat));
-            // var latlngStr = input.split(',', 2);
-            var latlng = {lat: parseFloat(input.lat), lng: parseFloat(input.lng)};
-            return $q(function(resolve, reject) {
-                geocoder.geocode({'location': latlng}, function(results, status) {
-                if (status === 'OK') {
-                    if (results[1]) {
-                        results[1].formatted_address;
-
-                        vm.address = results[1].formatted_address;
-                        resolve(results[1].formatted_address);
-
-                    } else {
-                        window.alert('No results found');
-                        reject(null);
-                    }
-                } else {
-                    window.alert('Geocoder failed due to: ' + status);
-                    reject(null);
-                }
-                });
-            });
-            
-        }
+        
 
         // When the user selects a city, get the place details for the city and
         // zoom the map in on the city.
         function onPlaceChanged() {
             var place = autocomplete.getPlace();
-            console.log('place: ' + place.content);
-            console.log('place geometry: ' + place.geometry.location);
+            // var promise = geocodeLatLng(place.geometry.location);
+            //vm.origin = place.geometry.location;
+            vm.origin = document.getElementById('autocomplete').value;
+            console.log('origin: ' + vm.origin);
+            
             if (place.geometry) {
                 map.panTo(place.geometry.location);
                 map.setZoom(15);
@@ -292,15 +219,20 @@ ListHotelsController.$inject = ['$q'];
 
             var iconTd = document.createElement('td');
             var nameTd = document.createElement('td');
+            var ratingTd = document.createElement('td');
             var icon = document.createElement('img');
             icon.src = markerIcon;
-            icon.setAttribute('class', 'placeIcon');
-            icon.setAttribute('className', 'placeIcon');
+            // icon.setAttribute('class', 'placeIcon');
+            // icon.setAttribute('className', 'placeIcon');
             var name = document.createTextNode(result.name);
+            var rating = document.createTextNode(result.rating);
+            //result.photos[0].getUrl({'maxWidth': 35, 'maxHeight': 35})
             iconTd.appendChild(icon);
             nameTd.appendChild(name);
+            ratingTd.appendChild(rating);
             tr.appendChild(iconTd);
             tr.appendChild(nameTd);
+            tr.appendChild(ratingTd);
             results.appendChild(tr);
         }
 
@@ -327,11 +259,14 @@ ListHotelsController.$inject = ['$q'];
 
         // Load the place information into the HTML elements used by the info window.
         function buildIWContent(place) {
+            console.log('place: ' + JSON.stringify(place));
             document.getElementById('iw-icon').innerHTML = '<img class="hotelIcon" ' +
                 'src="' + place.icon + '"/>';
             document.getElementById('iw-url').innerHTML = '<b><a href="' + place.url +
                 '">' + place.name + '</a></b>';
             document.getElementById('iw-address').textContent = place.vicinity;
+            //To directions
+            vm.destination = place.vicinity;
 
             if (place.formatted_phone_number) {
                 document.getElementById('iw-phone-row').style.display = '';
@@ -341,16 +276,16 @@ ListHotelsController.$inject = ['$q'];
                 document.getElementById('iw-phone-row').style.display = 'none';
             }
 
-            // Assign a five-star rating to the hotel, using a black star ('&#10029;')
+            // Assign a five-star rating to the hotel, using a yellow star ('&#f9f900;')
             // to indicate the rating the hotel has earned, and a white star ('&#10025;')
             // for the rating points not achieved.
             if (place.rating) {
                 var ratingHtml = '';
                 for (var i = 0; i < 5; i++) {
                     if (place.rating < (i + 0.5)) {
-                        ratingHtml += '&#10025;';
+                        ratingHtml += '&star;';
                     } else {
-                        ratingHtml += '&#10029;';
+                        ratingHtml += '&starf;';
                     }
                     document.getElementById('iw-rating-row').style.display = '';
                     document.getElementById('iw-rating').innerHTML = ratingHtml;
@@ -373,6 +308,101 @@ ListHotelsController.$inject = ['$q'];
             } else {
                 document.getElementById('iw-website-row').style.display = 'none';
             }
+        }
+
+        //Run when load website
+        function loadCurrentPosition(){
+            map = new google.maps.Map(document.getElementById('map'), {
+                center: { lat: 10.8482599, lng: 106.7841407 },
+                zoom: 15
+            });
+            infoWindow = new google.maps.InfoWindow;
+            var deferred = $q.defer();
+            
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(function (position) {
+                    var pos = {
+                        lat: position.coords.latitude,
+                        lng: position.coords.longitude
+                    };
+                   
+                    var place = pos;
+                    
+
+                    if (place) {
+                        map.panTo(place);
+                        map.setZoom(15);
+
+                        var promise = geocodeLatLng(pos);
+                        promise.then(function(){
+                            document.getElementById('autocomplete').value = vm.address;
+                            //To direction 
+                            vm.origin = vm.address;
+                            console.log('origin1: ' + vm.origin);
+
+                        }, function(){
+                            alert("Loi roi");
+                        });
+                        
+                        console.log('geocode: ' + JSON.stringify(geocodeLatLng(pos)));
+                        document.getElementById('autocomplete').placeholder = vm.address;
+                        search();
+                    } else {
+                        document.getElementById('autocomplete').placeholder = 'Enter a city';
+                    }
+
+                }, function () {
+                    handleLocationError(true, infoWindow, map.getCenter());
+                });
+            }else {
+                // Browser doesn't support Geolocation
+                handleLocationError(false, infoWindow, map.getCenter());
+            }
+        }
+
+        function handleLocationError(browserHasGeolocation, infoWindow, pos) {
+            infoWindow.setPosition(pos);
+            infoWindow.setContent(browserHasGeolocation ?
+                'Error: The Geolocation service failed.' :
+                'Error: Your browser doesn\'t support geolocation.'
+            );
+            infoWindow.open(map);
+        }
+
+        //Convert from latlng to address
+        function geocodeLatLng(currentPosition) {
+            var input = currentPosition;
+            // console.log('input: ' + (input.lat));
+            // var latlngStr = input.split(',', 2);
+            var latlng = {lat: parseFloat(input.lat), lng: parseFloat(input.lng)};
+            return $q(function(resolve, reject) {
+                geocoder.geocode({'location': latlng}, function(results, status) {
+                if (status === 'OK') {
+                    if (results[1]) {
+                        results[1].formatted_address;
+
+                        vm.address = results[1].formatted_address;
+                        resolve(results[1].formatted_address);
+
+                    } else {
+                        window.alert('No results found');
+                        reject(null);
+                    }
+                } else {
+                    window.alert('Geocoder failed due to: ' + status);
+                    reject(null);
+                }
+                });
+            });
+            
+        }
+
+        function test(){
+            alert(vm.origin + " =====> " + vm.destination);
+
+            directionsSv.setOrigin(vm.origin);
+            directionsSv.setDestination(vm.destination);
+            
         }
 
     }

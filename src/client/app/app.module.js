@@ -8,6 +8,7 @@
         'app.homepage',
         'app.gmap',
         'app.listhotels',
+        'app.directions',
 
         
 
