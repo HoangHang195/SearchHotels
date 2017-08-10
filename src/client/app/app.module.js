@@ -9,6 +9,7 @@
         'app.gmap',
         'app.listhotels',
         'app.directions',
+        'app.register',
 
         
 

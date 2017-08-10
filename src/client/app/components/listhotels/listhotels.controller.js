@@ -13,7 +13,7 @@ ListHotelsController.$inject = ['$q', 'directionsSv'];
         vm.onPlaceChanged = onPlaceChanged;
         vm.loadCurrentPosition = loadCurrentPosition;
         var geocoder = new google.maps.Geocoder();
-        vm.address = 1;
+        vm.address;
         vm.test = test;
         vm.origin;
         vm.destination;
@@ -169,6 +169,7 @@ ListHotelsController.$inject = ['$q', 'directionsSv'];
                         google.maps.event.addListener(markers[i], 'click', showInfoWindow);
                         setTimeout(dropMarker(i), i * 100);
                         addResult(results[i], i);
+                        // console.dir('results: ' + JSON.stringify(results[0].geometry.location));
                     }
                 }
             });
@@ -206,6 +207,7 @@ ListHotelsController.$inject = ['$q', 'directionsSv'];
             };
         }
 
+        //
         function addResult(result, i) {
             var results = document.getElementById('results');
             var markerLetter = String.fromCharCode('A'.charCodeAt(0) + (i % 26));
@@ -259,7 +261,7 @@ ListHotelsController.$inject = ['$q', 'directionsSv'];
 
         // Load the place information into the HTML elements used by the info window.
         function buildIWContent(place) {
-            console.log('place: ' + JSON.stringify(place));
+            // console.log('place: ' + JSON.stringify(place));
             document.getElementById('iw-icon').innerHTML = '<img class="hotelIcon" ' +
                 'src="' + place.icon + '"/>';
             document.getElementById('iw-url').innerHTML = '<b><a href="' + place.url +

@@ -1,45 +1,69 @@
-var Hotel = require('./../model/hotels.model');
+/*jshint esversion: 6 */
+
+var Hotel = require('./../models/hotel.model');
 var successMessage = require('./../services/successMessage');
 var failMessage = require('./../services/failMessage');
 var hotelDao = require('.././dao/hotel.dao');
 
 
 module.exports = {
-    signin: signin,
-    
+    registerHotel: registerHotel,
+    convertHotelModelToHotelResponse: convertHotelModelToHotelResponse
+
 };
 
-function signin(request) {
-    // console.log(request);
+function convertHotelModelToHotelResponse(hotelModel) {
+    var hotelObj = hotelModel.toObject();
     
-    return User.findOne({
-        email: request.email
-    }) 
-    .then((user) => {
-        if(!user){
-            return Promise.reject({
-                statusCode: 404,
-                message: failMessage.user.login.notFound
-            });
-        }
+    return hotelObj;
+}
 
-        if (cryptoPasswordUtil.verifyPassword(user.password, user.salt, request.password)) {
-            var token = jwt.signToken(userDao.convertUserModelToUserResponse(user));
-            return Promise.resolve({
-                message: successMessage.user.login,
-                'email': userDao.convertUserModelToUserResponse(user),
-                'token': token
-            });
-        } 
+function registerHotel(request) {
+    return Hotel.findOne({ location: request.location })
+        .then((hotel) => {
+            console.log("0");
+            if (hotel) {
+                
+                return Promise.reject({
+                    statusCode: 400,
+                    message: failMessage.hotel.register.duplicateHotel
+                });
+            }
 
-        return Promise.reject({
-            statusCode: 400,
-            message: failMessage.user.login.inCorrect
-        });
-    })
-    .catch(() => {
-        Promise.reject(() => {
-            message: failMessage.user.login.systemErr
+            console.log("hotel: " + hotel);
+            var newHotel = new Hotel({
+                name: request.name,
+                address: request.address,
+                location: request.location,
+                phone: request.phone,
+                website: request.website,
+                type: request.type,
+                photos: request.photos,
+                rating: request.rating,
+                reviews: request.reviews,
+                logo: request.logo,
+                vicinity: request.vicinity,
+            });
+
+            return newHotel.save()
+                .then((response) => {
+                    return Promise.resolve({
+                        message: successMessage.hotel.register,
+                        hotel: convertHotelModelToHotelResponse(response)
+                    });
+
+                }).catch(() => {
+                    console.log("1");
+                    return Promise.reject({
+                        message: failMessage.hotel.register.systemErr
+                    });
+                });
         })
-    });
+        .catch((err) => {
+            console.log("2");
+            return Promise.reject({
+                statusCode: 400,
+                message: failMessage.hotel.register.systemErr
+            });
+        });
 }

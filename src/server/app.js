@@ -8,6 +8,8 @@ var favicon = require('serve-favicon');
 var logger = require('morgan');
 var port = process.env.PORT || 8001;
 var four0four = require('./utils/404')();
+var config = require('./config');
+var db = require('./db/db.config');
 
 var environment = process.env.NODE_ENV;
 
@@ -16,7 +18,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.use(logger('dev'));
 
-// app.use('/api', require('./routes/hotel.route'));
+app.use('/api/register', require('./routes/hotel.route')());
 
 console.log('About to crank up node');
 console.log('PORT=' + port);
@@ -64,3 +66,5 @@ app.listen(port, function () {
     '\n__dirname = ' + __dirname +
     '\nprocess.cwd = ' + process.cwd());
 });
+
+

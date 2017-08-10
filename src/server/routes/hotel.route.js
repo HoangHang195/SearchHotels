@@ -1,34 +1,41 @@
+/*jshint esversion: 6 */
 var router = require('express').Router();
-var authDao = require('./../dao/hotel.dao');
+var hotelDao = require('./../dao/hotel.dao');
 var failMessage = require('./../services/failMessage');
-var successMessage = require('./../services/successMessage')
+var successMessage = require('./../services/successMessage');
 
 module.exports = function () {
 
-    // router.post('/signin', signin);
-    router.get('/getHotels', getHotels);
-    function getHotels(req, res, next){
-        var request = {
-            
-        }
-    }
+    
+    router.post('/registerHotel', registerHotel);
+    console.log("hello: ");
 
-    function signin(req, res, next) {
+    function registerHotel(req, res, next){
         var request = {
-            email: req.body.email,
-            password: req.body.password
+            name: req.body.name,
+            address: req.body.address,
+            location: req.body.location,
+            phone: req.body.phone,
+            website: req.body.website,
+            type: req.body.type,
+            photos: req.body.photos,
+            rating: req.body.rating,
+            reviews: req.body.reviews,
+            logo: req.body.logo,
+            vicinity: req.body.vicinity,
         };
-        if (!request.email || !request.password) {
-            res.status(403).send(failMessage.user.login.input).end();
+        console.log("request: " + request);
+        if (request.name === '' || request.address === '' || request.location === '') {
+            res.status(403).send(failMessage.hotel.register.input).end();
         }
-
-        authDao.signin(request) 
-        .then((response) => {
-            res.status(200).send(response).end();
-        })
-        .catch((err) => {
-            next(err);
-        });
+        hotelDao.registerHotel(request)
+            .then((response) => {
+                res.status(200).send(response).end()
+            }).catch((err) => {
+                console.log("Err: " + JSON.stringify(err));
+                res.status(err.statusCode).send(err.message).end();
+                // next(err);
+            });
     }
 
     return router;

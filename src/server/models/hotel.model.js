@@ -1,8 +1,8 @@
 var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
 
-var teamSchema = new Schema({
-    name: {
+var hotelSchema = new Schema({
+    name: { 
         type: String,
         required: true
     },
@@ -16,6 +16,9 @@ var teamSchema = new Schema({
         longitude: {
             type: Number
         }
+    },
+    phone: {
+        type: String,
     },
     website: {
         type: String,

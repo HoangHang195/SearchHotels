@@ -1,13 +1,18 @@
 <div ng-controller="GmapController">
 
-  <div>
-    <!--<input id="address" type="textbox" value="Hà Nội" ng-model="address" ng-enter="vm.codeAddress()">
-    <input type="button" value="Tìm kiếm" ng-click='vm.codeAddress()'>-->
-    <input id="address" type="textbox" value="Hà Nội" ng-model="address">
-    <input type="button" value="Tìm kiếm">
-  </div>
-
-  <div id="map"></div>
+  <div id="map" height="460px" width="100%"></div>
+    <div id="form">
+      <table>
+      <tr><td>Name:</td> <td><input type='text' id='name'/> </td> </tr>
+      <tr><td>Address:</td> <td><input type='text' id='address'/> </td> </tr>
+      <tr><td>Type:</td> <td><select id='type'> +
+                 <option value='bar' SELECTED>bar</option>
+                 <option value='restaurant'>restaurant</option>
+                 </select> </td></tr>
+                 <tr><td></td><td><input type='button' value='Save' ng-click='vm.saveData()'/></td></tr>
+      </table>
+    </div>
+    <div id="message">Location saved</div>
 
 
 </div>

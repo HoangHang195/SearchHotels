@@ -9,137 +9,82 @@
 
     GmapController.$inject = ['logger', '$geolocation', '$scope'];
     /* @ngInject */
-    function GmapController($geolocation, $scope) {
+    function GmapController(logger, $geolocation, $scope) {
 
         var vm = this;
-        vm.title = 'Gmap';
-        vm.codeAddress = codeAddress;
+        var map;
+      vm.marker = 0;
+      var infowindow;
+      var messagewindow;
 
-        //google.maps.event.addDomListener(window, 'load', initMap);
+      vm.saveData = saveData;
 
-        initMap();
-        // codeAddress();
-        nearbySearch();
-        // zoomControl();
+      initMap();
 
-        var map, infoWindow, geocoder;
-        function initMap() {
-            map = new google.maps.Map(document.getElementById('map'), {
-                center: { lat: 10.8482599, lng: 106.7841407 },
-                zoom: 15
-            });
-            infoWindow = new google.maps.InfoWindow;
+      function initMap() {
+        var california = {lat: 37.4419, lng: -122.1419};
+        map = new google.maps.Map(document.getElementById('map'), {
+          center: california,
+          zoom: 13
+        });
 
-            // Try HTML5 geolocation.
-            if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(function (position) {
-                    var pos = {
-                        lat: position.coords.latitude,
-                        lng: position.coords.longitude
-                    };
+        infowindow = new google.maps.InfoWindow({
+          content: document.getElementById('form')
+        });
 
-                    infoWindow.setPosition(pos);
-                    infoWindow.setContent('Đây là vị trí hiện tại của bạn.');
-                    infoWindow.open(map);
-                    map.setCenter(pos);
-                    var marker = new google.maps.Marker({
-                        position: pos,
-                        map: map,
-                        title: 'Hello World!',
-                        icon: '/src/client/assets/images/person-location.png'
-                    });
+        messagewindow = new google.maps.InfoWindow({
+          content: document.getElementById('message')
+        });
 
-                    var customMapType = new google.maps.StyledMapType([
-                        { stylers: [{ hue: '#D2E4C8' }] }, //color
-                    ]);
+        google.maps.event.addListener(map, 'click', function(event) {
+          vm.marker = new google.maps.Marker({
+            position: event.latLng,
+            map: map
+          });
 
-                    var customMapTypeId = 'custom_style';
-                    map.mapTypes.set(customMapTypeId, customMapType);
-                    map.setMapTypeId(customMapTypeId);
+          console.log("marker: " + vm.marker);
+          google.maps.event.addListener(vm.marker, 'click', function() {
+            infowindow.open(map, vm.marker);
+          });
+        });
+      }
 
-                }, function () {
-                    handleLocationError(true, infoWindow, map.getCenter());
-                });
-            } else {
-                // Browser doesn't support Geolocation
-                handleLocationError(false, infoWindow, map.getCenter());
-            }
-        }
+      function saveData() {
+        var name = escape(document.getElementById('name').value);
+        var address = escape(document.getElementById('address').value);
+        var type = document.getElementById('type').value;
+        console.log("marker: " + vm.marker);
+        var latlng = vm.marker.getPosition();
+        var url = 'phpsqlinfo_addrow.php?name=' + name + '&address=' + address +
+                  '&type=' + type + '&lat=' + latlng.lat() + '&lng=' + latlng.lng();
 
-        function handleLocationError(browserHasGeolocation, infoWindow, pos) {
-            infoWindow.setPosition(pos);
-            infoWindow.setContent(browserHasGeolocation ?
-                'Error: The Geolocation service failed.' :
-                'Error: Your browser doesn\'t support geolocation.'
-            );
-            infoWindow.open(map);
-        }
+        downloadUrl(url, function(data, responseCode) {
 
+          if (responseCode == 200 && data.length <= 1) {
+            infowindow.close();
+            messagewindow.open(map, vm.marker);
+          }
+        });
+      }
 
-        function codeAddress() {
+      function downloadUrl(url, callback) {
+        var request = window.ActiveXObject ?
+            new ActiveXObject('Microsoft.XMLHTTP') :
+            new XMLHttpRequest;
 
-            map = new google.maps.Map(document.getElementById('map'), {
-                // center: { lat: 10.8482599, lng: 106.7841407 },
-                zoom: 15
-            });
+        request.onreadystatechange = function() {
+          if (request.readyState == 4) {
+            request.onreadystatechange = doNothing;
+            callback(request.responseText, request.status);
+          }
+        };
 
-            var address = document.getElementById('address').value;
-            console.log("address: " + address);
-            geocoder = new google.maps.Geocoder();
-            geocoder.geocode({ 'address': address }, function (results, status) {
-                if (status == 'OK') {
-                    console.log('location: ' + results[0].geometry.location);
-                    map.setCenter(results[0].geometry.location);
-                    var marker = new google.maps.Marker({
-                        map: map,
-                        position: results[0].geometry.location
-                    });
+        request.open('GET', url, true);
+        request.send(null);
+      }
 
-                } else {
-                    alert('Geocode was not successful for the following reason: ' + status);
-                }
-            });
-            
-        }
-
-        //nearbySearch
-        function nearbySearch() {
-            var pyrmont = { lat: 10.8482599, lng: 106.7841407 };
-            console.log('pyrmont: ' + pyrmont);
-            var service = new google.maps.places.PlacesService(map);
-            service.nearbySearch({
-                location: pyrmont,
-                radius: 6000,
-                // bounds: map.getBounds(),
-                types: ['lodging'], 
-            }, callback);
-            
-        }
-
-        function callback(results, status) {
-            if (status === google.maps.places.PlacesServiceStatus.OK) {
-                for (var i = 0; i < results.length; i++) {
-                    createMarker(results[i]);
-                }
-            }
-        }
-
-        function createMarker(place) {
-            var placeLoc = place.geometry.location;
-            var marker = new google.maps.Marker({
-                map: map,
-                position: place.geometry.location
-            });
-
-            google.maps.event.addListener(marker, 'click', function () {
-                infoWindow.setContent(place.name);
-                infoWindow.open(map, this);
-            });
-        }
-
-
-
-
+      function doNothing () {
+      }
     }
 
 })();
