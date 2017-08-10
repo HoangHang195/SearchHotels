@@ -61,9 +61,10 @@ function registerHotel(request) {
         })
         .catch((err) => {
             console.log("2");
-            return Promise.reject({
-                statusCode: 400,
-                message: failMessage.hotel.register.systemErr
-            });
+            return err;
+            // Promise.reject({
+            //     statusCode: 400,
+            //     message: failMessage.hotel.register.systemErr
+            // });
         });
 }
