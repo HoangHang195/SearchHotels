@@ -10,12 +10,16 @@ var hotelSchema = new Schema({
         type: String
     },
     location: {
-        latitude: {
-            type: Number
+        latitude: { 
+            type: Number,
+            required: true
         },
         longitude: {
-            type: Number
+            type: Number, 
+            required: true,
         }
+        
+        // type: Coordinates
     },
     phone: {
         type: String,

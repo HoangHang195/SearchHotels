@@ -8,16 +8,6 @@ ListHotelsController.$inject = ['$q', 'directionsSv'];
     function ListHotelsController($q, directionsSv) {
         
         var vm = this;
-        vm.countries = countries;
-        vm.initMap = initMap;
-        vm.onPlaceChanged = onPlaceChanged;
-        vm.loadCurrentPosition = loadCurrentPosition;
-        var geocoder = new google.maps.Geocoder();
-        vm.address;
-        vm.test = test;
-        vm.origin;
-        vm.destination;
-        
         var countries = {
                 'vn': {
                     center: { lat: 14.058324, lng: 108.277199 },
@@ -76,27 +66,27 @@ ListHotelsController.$inject = ['$q', 'directionsSv'];
                     zoom: 5
                 }
             };
-
-
-       
-
+        vm.countries = countries;
+        vm.initMap = initMap;
+        vm.onPlaceChanged = onPlaceChanged;
+        vm.loadCurrentPosition = loadCurrentPosition;
+        var geocoder = new google.maps.Geocoder();
+        vm.address = '';
+        vm.test = test;
+        vm.origin = '';
+        vm.destination = '';
+    
         var map, places, infoWindow;
         var markers = [];
-        var autocomplete;
+        var autocomplete = '';
         var countryRestrict = { 'country': 'vn' };
         var MARKER_PATH = 'https://developers.google.com/maps/documentation/javascript/images/marker_green';
         var hostnameRegexp = new RegExp('^https?://.+?/');
 
-
-
         function initMap() {
-            
             map = new google.maps.Map(document.getElementById('map'), {
                 zoom: countries['vn'].zoom,
                 center: countries['vn'].center,
-                // mapTypeControl: false,
-                // panControl: false,
-                // zoomControl: false,
                 streetViewControl: false
             });
 
@@ -113,7 +103,6 @@ ListHotelsController.$inject = ['$q', 'directionsSv'];
                     componentRestrictions: countryRestrict
                 });
             places = new google.maps.places.PlacesService(map);
-
             autocomplete.addListener('place_changed', onPlaceChanged);
 
             // Add a DOM event listener to react when the user selects a country.
@@ -121,8 +110,6 @@ ListHotelsController.$inject = ['$q', 'directionsSv'];
                 'change', setAutocompleteCountry);
         }
         
-        
-
         // When the user selects a city, get the place details for the city and
         // zoom the map in on the city.
         function onPlaceChanged() {
@@ -130,7 +117,6 @@ ListHotelsController.$inject = ['$q', 'directionsSv'];
             // var promise = geocodeLatLng(place.geometry.location);
             //vm.origin = place.geometry.location;
             vm.origin = document.getElementById('autocomplete').value;
-            console.log('origin: ' + vm.origin);
             
             if (place.geometry) {
                 map.panTo(place.geometry.location);
@@ -155,13 +141,14 @@ ListHotelsController.$inject = ['$q', 'directionsSv'];
                     // Create a marker for each hotel found, and
                     // assign a letter of the alphabetic to each marker icon.
                     for (var i = 0; i < results.length; i++) {
-                        var markerLetter = String.fromCharCode('A'.charCodeAt(0) + (i % 26));
-                        var markerIcon = MARKER_PATH + markerLetter + '.png';
+                        // var markerLetter = String.fromCharCode('A'.charCodeAt(0) + (i % 26));
+                        // var markerIcon = MARKER_PATH + markerLetter + '.png';
                         // Use marker animation to drop the icons incrementally on the map.
                         markers[i] = new google.maps.Marker({
                             position: results[i].geometry.location,
                             animation: google.maps.Animation.DROP,
-                            icon: markerIcon
+                            label: (i + 1).toString(),
+                            // icon: markerIcon
                         });
                         // If the user clicks a hotel marker, show the details of that hotel
                         // in an info window.
@@ -169,7 +156,6 @@ ListHotelsController.$inject = ['$q', 'directionsSv'];
                         google.maps.event.addListener(markers[i], 'click', showInfoWindow);
                         setTimeout(dropMarker(i), i * 100);
                         addResult(results[i], i);
-                        // console.dir('results: ' + JSON.stringify(results[0].geometry.location));
                     }
                 }
             });
@@ -188,7 +174,7 @@ ListHotelsController.$inject = ['$q', 'directionsSv'];
         // Also center and zoom the map on the given country.
         function setAutocompleteCountry() {
             var country = document.getElementById('country').value;
-            if (country == 'all') {
+            if (country === 'all') {
                 autocomplete.setComponentRestrictions({ 'country': [] });
                 map.setCenter({ lat: 15, lng: 0 });
                 map.setZoom(2);
@@ -207,7 +193,7 @@ ListHotelsController.$inject = ['$q', 'directionsSv'];
             };
         }
 
-        //
+        //Hiển thị danh sách
         function addResult(result, i) {
             var results = document.getElementById('results');
             var markerLetter = String.fromCharCode('A'.charCodeAt(0) + (i % 26));
@@ -221,20 +207,20 @@ ListHotelsController.$inject = ['$q', 'directionsSv'];
 
             var iconTd = document.createElement('td');
             var nameTd = document.createElement('td');
-            var ratingTd = document.createElement('td');
+            // var ratingTd = document.createElement('td');
             var icon = document.createElement('img');
             icon.src = markerIcon;
             // icon.setAttribute('class', 'placeIcon');
             // icon.setAttribute('className', 'placeIcon');
             var name = document.createTextNode(result.name);
-            var rating = document.createTextNode(result.rating);
+            // var rating = document.createTextNode(result.rating);
             //result.photos[0].getUrl({'maxWidth': 35, 'maxHeight': 35})
             iconTd.appendChild(icon);
             nameTd.appendChild(name);
-            ratingTd.appendChild(rating);
+            // ratingTd.appendChild(rating);
             tr.appendChild(iconTd);
             tr.appendChild(nameTd);
-            tr.appendChild(ratingTd);
+            // tr.appendChild(ratingTd);
             results.appendChild(tr);
         }
 
@@ -264,6 +250,7 @@ ListHotelsController.$inject = ['$q', 'directionsSv'];
             // console.log('place: ' + JSON.stringify(place));
             document.getElementById('iw-icon').innerHTML = '<img class="hotelIcon" ' +
                 'src="' + place.icon + '"/>';
+                console.log(place);
             document.getElementById('iw-url').innerHTML = '<b><a href="' + place.url +
                 '">' + place.name + '</a></b>';
             document.getElementById('iw-address').textContent = place.vicinity;
@@ -329,7 +316,6 @@ ListHotelsController.$inject = ['$q', 'directionsSv'];
                     };
                    
                     var place = pos;
-                    
 
                     if (place) {
                         map.panTo(place);
@@ -343,7 +329,7 @@ ListHotelsController.$inject = ['$q', 'directionsSv'];
                             console.log('origin1: ' + vm.origin);
 
                         }, function(){
-                            alert("Loi roi");
+                            alert('Loi roi');
                         });
                         
                         console.log('geocode: ' + JSON.stringify(geocodeLatLng(pos)));

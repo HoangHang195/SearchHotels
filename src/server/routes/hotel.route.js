@@ -6,11 +6,13 @@ var successMessage = require('./../services/successMessage');
 
 module.exports = function () {
 
-    
+
     router.post('/registerHotel', registerHotel);
+    router.get('/getHotelsPositionByDistance/:start/:end/:distance', getHotelsPositionByDistance);
+
     console.log("hello: ");
 
-    function registerHotel(req, res, next){
+    function registerHotel(req, res, next) {
         var request = {
             name: req.body.name,
             address: req.body.address,
@@ -30,12 +32,28 @@ module.exports = function () {
         }
         hotelDao.registerHotel(request)
             .then((response) => {
-                res.status(200).send(response).end()
+                res.status(200).send(response).end();
+            }).catch((err) => {
+                res.status(err.statusCode).send(err.message).end();
+                // next(err);
+            });
+    }
+
+    function getHotelsPositionByDistance(req, res, next) {
+        var request = {
+            start: req.params.start,
+            end: req.params.end,
+            distance: req.params.distance
+        };
+        hotelDao.getHotelsPositionByDistance(request)
+            .then((response) => {
+                res.status(200).send(response).end();
             }).catch((err) => {
                 console.log("Err: " + JSON.stringify(err));
                 res.status(err.statusCode).send(err.message).end();
                 // next(err);
             });
+
     }
 
     return router;

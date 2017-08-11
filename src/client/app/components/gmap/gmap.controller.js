@@ -22,18 +22,21 @@
 
     vm.register = register;
     
-    function register(name, address, location) {
+    function register(name, address, lat, lng) {
+      var location = {
+        "latitude": lat,
+        "longitude": lng
+      }
         var newHotel = {
             name: name,
             address: address,
             location: location,
         };
 
-        console.log("Hoàng Nguyễn Thu Hằng: " + newHotel.name.toString("utf8"));
         return hotelService.register(newHotel).then(
             function (res) {
                 toastr.success(res);
-                $state.go('layout.listhotels');
+                // $state.go('layout.listhotels');
             },
             function (err) {
                 toastr.error(err);
@@ -42,10 +45,10 @@
     };
 
     function initMap() {
-      var california = { lat: 37.4419, lng: -122.1419 };
+      var vn = { lat: 14.058324, lng: 108.277199 };
       map = new google.maps.Map(document.getElementById('map'), {
-        center: california,
-        zoom: 13
+        center: vn,
+        zoom: 8
       });
 
       infowindow = new google.maps.InfoWindow({
@@ -114,9 +117,13 @@
       var address = document.getElementById('address').value;
       var type = document.getElementById('type').value;
 
-      var position = vm.marker.getPosition();
+      var position = vm.marker.getPosition(); //position: (lat, lng)
+      var arr = position.toString().split(",");
+      var lat = (arr[0].split('('))[1];
+      var lng = (arr[1].split(')'))[0];
+      
 
-      register(name, address, position);
+      register(name, address, lat, lng);
 
       // alert("position: " + position);
       // var url = 'phpsqlinfo_addrow.php?name=' + name + '&address=' + address +
