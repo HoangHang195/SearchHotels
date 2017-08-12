@@ -43,7 +43,7 @@ function registerHotel(request) {
                 rating: request.rating,
                 reviews: request.reviews,
                 logo: request.logo,
-                vicinity: request.vicinity,
+                vicinity: request.vicinity
             });
 
             return newHotel.save()
@@ -79,11 +79,14 @@ function getHotelsPositionByDistance(request) {
             listPosition.forEach(function (position) {
                 console.log('position: ' + position.location);
                 //location: {longitude, latitude} => {latitude, longitude}
-                var permutePosition = {latitude: position.location.latitude, longitude: position.location.longitude}
-                console.log('permutePosition: ' + JSON.stringify(permutePosition.latitude) );
-                var distance = geolib.getDistance(permutePosition, { latitude: 12.661299, longitude: 107.8876178});
-                console.log('distance: ' + distance);
-                console.log('request: ' + JSON.stringify(request.distance));
+                var permutePosition = {latitude: position.location.latitude, longitude: position.location.longitude};
+                // var permuteStartPosition = {latitude: request.start.latitude, longitude: request.start.longitude};
+
+                console.log('start: ' + request.start);
+                console.log('distance: ' + request.distance);
+                var distance = geolib.getDistance(request.start, permutePosition);//{latitude: -33.867591, longitude: 151.201196}
+                
+                // console.log('request: ' + JSON.stringify(request.distance));
                 if(distance <= request.distance){
                     results.push(permutePosition);
                 }
@@ -95,7 +98,7 @@ function getHotelsPositionByDistance(request) {
             });
         })
         .catch((err) => {
-            console.log('err:' + err);
+            console.log('errr:' + err);
             return err;
         });
     //db.collection.find(query, projection)

@@ -4,122 +4,158 @@
     angular.module('app.listhotels')
         .controller('ListHotelsController', ListHotelsController);
 
-ListHotelsController.$inject = ['$q', 'directionsSv'];
-    function ListHotelsController($q, directionsSv) {
-        
+    ListHotelsController.$inject = ['$q', 'directionsSv', 'hotelService'];
+    function ListHotelsController($q, directionsSv, hotelService) {
+
         var vm = this;
         var countries = {
-                'vn': {
-                    center: { lat: 14.058324, lng: 108.277199 },
-                    zoom: 5
-                },
-                'au': {
-                    center: { lat: -25.3, lng: 133.8 },
-                    zoom: 4
-                },
-                'br': {
-                    center: { lat: -14.2, lng: -51.9 },
-                    zoom: 3
-                },
-                'ca': {
-                    center: { lat: 62, lng: -110.0 },
-                    zoom: 3
-                },
-                'fr': {
-                    center: { lat: 46.2, lng: 2.2 },
-                    zoom: 5
-                },
-                'de': {
-                    center: { lat: 51.2, lng: 10.4 },
-                    zoom: 5
-                },
-                'mx': {
-                    center: { lat: 23.6, lng: -102.5 },
-                    zoom: 4
-                },
-                'nz': {
-                    center: { lat: -40.9, lng: 174.9 },
-                    zoom: 5
-                },
-                'it': {
-                    center: { lat: 41.9, lng: 12.6 },
-                    zoom: 5
-                },
-                'za': {
-                    center: { lat: -30.6, lng: 22.9 },
-                    zoom: 5
-                },
-                'es': {
-                    center: { lat: 40.5, lng: -3.7 },
-                    zoom: 5
-                },
-                'pt': {
-                    center: { lat: 39.4, lng: -8.2 },
-                    zoom: 6
-                },
-                'us': {
-                    center: { lat: 37.1, lng: -95.7 },
-                    zoom: 3
-                },
-                'uk': {
-                    center: { lat: 54.8, lng: -4.6 },
-                    zoom: 5
-                }
-            };
+            'vn': {
+                center: { lat: 14.058324, lng: 108.277199 },
+                zoom: 5
+            },
+            'au': {
+                center: { lat: -25.3, lng: 133.8 },
+                zoom: 4
+            },
+            'br': {
+                center: { lat: -14.2, lng: -51.9 },
+                zoom: 3
+            },
+            'ca': {
+                center: { lat: 62, lng: -110.0 },
+                zoom: 3
+            },
+            'fr': {
+                center: { lat: 46.2, lng: 2.2 },
+                zoom: 5
+            },
+            'de': {
+                center: { lat: 51.2, lng: 10.4 },
+                zoom: 5
+            },
+            'mx': {
+                center: { lat: 23.6, lng: -102.5 },
+                zoom: 4
+            },
+            'nz': {
+                center: { lat: -40.9, lng: 174.9 },
+                zoom: 5
+            },
+            'it': {
+                center: { lat: 41.9, lng: 12.6 },
+                zoom: 5
+            },
+            'za': {
+                center: { lat: -30.6, lng: 22.9 },
+                zoom: 5
+            },
+            'es': {
+                center: { lat: 40.5, lng: -3.7 },
+                zoom: 5
+            },
+            'pt': {
+                center: { lat: 39.4, lng: -8.2 },
+                zoom: 6
+            },
+            'us': {
+                center: { lat: 37.1, lng: -95.7 },
+                zoom: 3
+            },
+            'uk': {
+                center: { lat: 54.8, lng: -4.6 },
+                zoom: 5
+            }
+        };
         vm.countries = countries;
         vm.initMap = initMap;
         vm.onPlaceChanged = onPlaceChanged;
         vm.loadCurrentPosition = loadCurrentPosition;
-        var geocoder = new google.maps.Geocoder();
+        vm.geocoder = new google.maps.Geocoder();
+
+        vm.countryRestrict = countryRestrict = { 'country': 'vn' };
+        vm.map;
+        vm.infoWindow = new google.maps.InfoWindow({
+            content: document.getElementById('info-content')
+        });
+        var markers = [];
+        // Create the autocomplete object and associate it with the UI input control.
+        // Restrict the search to the default country, and to place type "cities".
+        vm.autocomplete = new google.maps.places.Autocomplete(
+            /** @type {!HTMLInputElement} */(
+                document.getElementById('autocomplete')), {
+                types: [],
+                componentRestrictions: countryRestrict //Viet Nam
+            });
+        vm.places = new google.maps.places.PlacesService(vm.map);
         vm.address = '';
-        vm.test = test;
         vm.origin = '';
         vm.destination = '';
-    
-        var map, places, infoWindow;
-        var markers = [];
-        var autocomplete = '';
-        var countryRestrict = { 'country': 'vn' };
         var MARKER_PATH = 'https://developers.google.com/maps/documentation/javascript/images/marker_green';
         var hostnameRegexp = new RegExp('^https?://.+?/');
 
         function initMap() {
-            map = new google.maps.Map(document.getElementById('map'), {
+            vm.map = new google.maps.Map(document.getElementById('map'), {
                 zoom: countries['vn'].zoom,
                 center: countries['vn'].center,
                 streetViewControl: false
             });
-
-            infoWindow = new google.maps.InfoWindow({
-                content: document.getElementById('info-content')
-            });
-
-            // Create the autocomplete object and associate it with the UI input control.
-            // Restrict the search to the default country, and to place type "cities".
-            autocomplete = new google.maps.places.Autocomplete(
-            /** @type {!HTMLInputElement} */(
-                    document.getElementById('autocomplete')), {
-                    types: [],
-                    componentRestrictions: countryRestrict
-                });
-            places = new google.maps.places.PlacesService(map);
-            autocomplete.addListener('place_changed', onPlaceChanged);
-
+            // var infoWindow = vm.infoWindow;
+            // var autocomplete = vm.autocomplete;
+            // var places = vm.places;
+            vm.autocomplete.addListener('place_changed', onPlaceChanged);
             // Add a DOM event listener to react when the user selects a country.
             document.getElementById('country').addEventListener(
                 'change', setAutocompleteCountry);
+
+            var userPosition = getUserCurrentPosition().then(function (pos) {
+                markerUserPosition(vm.map, pos);
+            });
+            
         }
-        
+
+        function getUserCurrentPosition() {
+            var deferred = $q.defer();
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(function (position) {
+                    var pos = {
+                        lat: position.coords.latitude,
+                        lng: position.coords.longitude
+                    };
+                    deferred.resolve(pos);
+                })
+            }
+            return deferred.promise;
+        }
+
+        function markerUserPosition(map, position) {
+            map.setCenter(position);
+            map.setZoom(17);
+
+            var marker = new google.maps.Marker({
+                position: position,
+                map: map,
+                icon: '/src/client/assets/images/person-location.png',
+                title: 'Vị trí của bạn'
+            });
+            
+        }
+
+        function searchLocalPosition(start, distance) {
+            return hotelService.getHotelsPositionByDistance(start, distance);
+        }
         // When the user selects a city, get the place details for the city and
         // zoom the map in on the city.
         function onPlaceChanged() {
-            var place = autocomplete.getPlace();
+            var place = vm.autocomplete.getPlace();
+            console.log('place: ' + place);
             // var promise = geocodeLatLng(place.geometry.location);
             //vm.origin = place.geometry.location;
-            vm.origin = document.getElementById('autocomplete').value;
-            
+            // vm.origin = document.getElementById('autocomplete').value;
+
+            search();
             if (place.geometry) {
-                map.panTo(place.geometry.location);
+                // map.panTo(place.geometry.location);
+                map.setCenter(place.geometry.location);
                 map.setZoom(15);
                 search();
             } else {
@@ -131,10 +167,11 @@ ListHotelsController.$inject = ['$q', 'directionsSv'];
         function search() {
             var search = {
                 bounds: map.getBounds(),
+                radius: '500',
                 types: ['lodging']
             };
 
-            places.nearbySearch(search, function (results, status) {
+            vm.places.nearbySearch(search, function (results, status) {
                 if (status === google.maps.places.PlacesServiceStatus.OK) {
                     clearResults();
                     clearMarkers();
@@ -175,14 +212,15 @@ ListHotelsController.$inject = ['$q', 'directionsSv'];
         function setAutocompleteCountry() {
             var country = document.getElementById('country').value;
             if (country === 'all') {
-                autocomplete.setComponentRestrictions({ 'country': [] });
+                vm.autocomplete.setComponentRestrictions({ 'country': [] });
                 map.setCenter({ lat: 15, lng: 0 });
                 map.setZoom(2);
             } else {
-                autocomplete.setComponentRestrictions({ 'country': country });
+                vm.autocomplete.setComponentRestrictions({ 'country': country });
                 map.setCenter(countries[country].center);
                 map.setZoom(countries[country].zoom);
             }
+            document.getElementById('autocomplete').placeholder = 'Enter a city';
             clearResults();
             clearMarkers();
         }
@@ -234,13 +272,15 @@ ListHotelsController.$inject = ['$q', 'directionsSv'];
         // Get the place details for a hotel. Show the information in an info window,
         // anchored on the marker for the hotel that the user selected.
         function showInfoWindow() {
+
             var marker = this;
-            places.getDetails({ placeId: marker.placeResult.place_id },
+            vm.places.getDetails({ placeId: marker.placeResult.place_id },
                 function (place, status) {
+                    console.log('placennnn' + JSON.stringify(place));
                     if (status !== google.maps.places.PlacesServiceStatus.OK) {
                         return;
                     }
-                    infoWindow.open(map, marker);
+                    vm.infoWindow.open(vm.map, marker);
                     buildIWContent(place);
                 });
         }
@@ -250,7 +290,7 @@ ListHotelsController.$inject = ['$q', 'directionsSv'];
             // console.log('place: ' + JSON.stringify(place));
             document.getElementById('iw-icon').innerHTML = '<img class="hotelIcon" ' +
                 'src="' + place.icon + '"/>';
-                console.log(place);
+            // console.log(place);
             document.getElementById('iw-url').innerHTML = '<b><a href="' + place.url +
                 '">' + place.name + '</a></b>';
             document.getElementById('iw-address').textContent = place.vicinity;
@@ -300,21 +340,21 @@ ListHotelsController.$inject = ['$q', 'directionsSv'];
         }
 
         //Run when load website
-        function loadCurrentPosition(){
+        function loadCurrentPosition() {
             map = new google.maps.Map(document.getElementById('map'), {
                 center: { lat: 10.8482599, lng: 106.7841407 },
                 zoom: 15
             });
             infoWindow = new google.maps.InfoWindow;
             var deferred = $q.defer();
-            
+
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(function (position) {
                     var pos = {
                         lat: position.coords.latitude,
                         lng: position.coords.longitude
                     };
-                   
+
                     var place = pos;
 
                     if (place) {
@@ -322,16 +362,16 @@ ListHotelsController.$inject = ['$q', 'directionsSv'];
                         map.setZoom(15);
 
                         var promise = geocodeLatLng(pos);
-                        promise.then(function(){
-                            document.getElementById('autocomplete').value = vm.address;
+                        promise.then(function () {
+                            // document.getElementById('autocomplete').value = vm.address;
                             //To direction 
-                            vm.origin = vm.address;
-                            console.log('origin1: ' + vm.origin);
+                            // vm.origin = vm.address;
+                            // console.log('origin1: ' + vm.origin);
 
-                        }, function(){
+                        }, function () {
                             alert('Loi roi');
                         });
-                        
+
                         console.log('geocode: ' + JSON.stringify(geocodeLatLng(pos)));
                         document.getElementById('autocomplete').placeholder = vm.address;
                         search();
@@ -342,7 +382,7 @@ ListHotelsController.$inject = ['$q', 'directionsSv'];
                 }, function () {
                     handleLocationError(true, infoWindow, map.getCenter());
                 });
-            }else {
+            } else {
                 // Browser doesn't support Geolocation
                 handleLocationError(false, infoWindow, map.getCenter());
             }
@@ -362,37 +402,28 @@ ListHotelsController.$inject = ['$q', 'directionsSv'];
             var input = currentPosition;
             // console.log('input: ' + (input.lat));
             // var latlngStr = input.split(',', 2);
-            var latlng = {lat: parseFloat(input.lat), lng: parseFloat(input.lng)};
-            return $q(function(resolve, reject) {
-                geocoder.geocode({'location': latlng}, function(results, status) {
-                if (status === 'OK') {
-                    if (results[1]) {
-                        results[1].formatted_address;
+            var latlng = { lat: parseFloat(input.lat), lng: parseFloat(input.lng) };
+            return $q(function (resolve, reject) {
+                vm.geocoder.geocode({ 'location': latlng }, function (results, status) {
+                    if (status === 'OK') {
+                        if (results[1]) {
+                            results[1].formatted_address;
 
-                        vm.address = results[1].formatted_address;
-                        resolve(results[1].formatted_address);
+                            vm.address = results[1].formatted_address;
+                            resolve(results[1].formatted_address);
 
+                        } else {
+                            window.alert('No results found');
+                            reject(null);
+                        }
                     } else {
-                        window.alert('No results found');
+                        window.alert('Geocoder failed due to: ' + status);
                         reject(null);
                     }
-                } else {
-                    window.alert('Geocoder failed due to: ' + status);
-                    reject(null);
-                }
                 });
             });
-            
+
         }
-
-        function test(){
-            alert(vm.origin + " =====> " + vm.destination);
-
-            directionsSv.setOrigin(vm.origin);
-            directionsSv.setDestination(vm.destination);
-            
-        }
-
     }
 
 })();

@@ -7,10 +7,9 @@ var successMessage = require('./../services/successMessage');
 module.exports = function () {
 
 
-    router.post('/registerHotel', registerHotel);
-    router.get('/getHotelsPositionByDistance/:start/:end/:distance', getHotelsPositionByDistance);
+    router.post('/hotelRegister', registerHotel);
+    router.get('/getHotelsPositionByDistance/:start/:distance', getHotelsPositionByDistance);
 
-    console.log("hello: ");
 
     function registerHotel(req, res, next) {
         var request = {
@@ -42,7 +41,7 @@ module.exports = function () {
     function getHotelsPositionByDistance(req, res, next) {
         var request = {
             start: req.params.start,
-            end: req.params.end,
+            // end: req.params.end,
             distance: req.params.distance
         };
         hotelDao.getHotelsPositionByDistance(request)
