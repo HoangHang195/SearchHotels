@@ -66,57 +66,110 @@
                 zoom: 5
             }
         };
-        vm.countries = countries;
-        vm.initMap = initMap;
-        vm.onPlaceChanged = onPlaceChanged;
-        vm.loadCurrentPosition = loadCurrentPosition;
-        vm.geocoder = new google.maps.Geocoder();
-
-        vm.countryRestrict = countryRestrict = { 'country': 'vn' };
-        vm.map;
-        vm.infoWindow = new google.maps.InfoWindow({
+        var countryRestrict = countryRestrict = { 'country': 'vn' };
+        var markers = [];
+        var map, places;
+        var MARKER_PATH = 'https://developers.google.com/maps/documentation/javascript/images/marker_green';
+        var infoWindow = new google.maps.InfoWindow({
             content: document.getElementById('info-content')
         });
-        var markers = [];
-        // Create the autocomplete object and associate it with the UI input control.
-        // Restrict the search to the default country, and to place type "cities".
-        vm.autocomplete = new google.maps.places.Autocomplete(
-            /** @type {!HTMLInputElement} */(
-                document.getElementById('autocomplete')), {
-                types: [],
-                componentRestrictions: countryRestrict //Viet Nam
-            });
-        vm.places = new google.maps.places.PlacesService(vm.map);
-        vm.address = '';
-        vm.origin = '';
-        vm.destination = '';
-        var MARKER_PATH = 'https://developers.google.com/maps/documentation/javascript/images/marker_green';
-        var hostnameRegexp = new RegExp('^https?://.+?/');
+
+        vm.initMap = initMap;
+
+        // function searchLocalPosition(start, distance) {
+        //     var arr = hotelService.getHotelsPositionByDistance(start, distance);
+        //     console.log('arr: ' + arr);
+
+        //     for (var i = 0; i < results.length; i++) {
+        //         // var markerLetter = String.fromCharCode('A'.charCodeAt(0) + (i % 26));
+        //         // var markerIcon = MARKER_PATH + markerLetter + '.png';
+        //         // Use marker animation to drop the icons incrementally on the map.
+        //         markers[i] = new google.maps.Marker({
+        //             position: results[i].geometry.location,
+        //             animation: google.maps.Animation.DROP,
+        //             label: (i + 1).toString(),
+        //             // icon: markerIcon
+        //         });
+        //         // If the user clicks a hotel marker, show the details of that hotel
+        //         // in an info window.
+        //         markers[i].placeResult = results[i];
+        //         google.maps.event.addListener(markers[i], 'click', showInfoWindow);
+        //         setTimeout(dropMarker(i), i * 50);
+        //         addResult(results[i], i);
+        //     }
+
+        // }
 
         function initMap() {
-            vm.map = new google.maps.Map(document.getElementById('map'), {
+            map = new google.maps.Map(document.getElementById('map'), {
                 zoom: countries['vn'].zoom,
                 center: countries['vn'].center,
                 streetViewControl: false
             });
-            // var infoWindow = vm.infoWindow;
-            // var autocomplete = vm.autocomplete;
-            // var places = vm.places;
-            vm.autocomplete.addListener('place_changed', onPlaceChanged);
+            var autocomplete = new google.maps.places.Autocomplete(
+            /** @type {!HTMLInputElement} */(
+                    document.getElementById('autocomplete')), {
+                    types: [],
+                    componentRestrictions: countryRestrict //Viet Nam
+                });
+
+            places = new google.maps.places.PlacesService(map);
+
+            autocomplete.addListener('place_changed', function () {
+                var place = autocomplete.getPlace();
+                console.log('place: ' + place);
+                if (place.geometry) {
+                    // map.panTo(place.geometry.location);
+                    map.setCenter(place.geometry.location);
+                    map.setZoom(10);
+                    displayHotelsPosition(place.geometry.location, 5000);
+                    //To direct 
+                    directionsSv.setOrigin(place.geometry.location);
+
+                } else {
+                    document.getElementById('autocomplete').placeholder = 'Enter a city';
+                }
+            });
+
             // Add a DOM event listener to react when the user selects a country.
             document.getElementById('country').addEventListener(
-                'change', setAutocompleteCountry);
+                'change', function setAutocompleteCountry() {
+                    var country = document.getElementById('country').value;
+                    if (country === 'all') {
+                        autocomplete.setComponentRestrictions({ 'country': [] });
+                        map.setCenter({ lat: 15, lng: 0 });
+                        map.setZoom(2);
+                    } else {
+                        autocomplete.setComponentRestrictions({ 'country': country });
+                        map.setCenter(countries[country].center);
+                        map.setZoom(countries[country].zoom);
+                    }
+                    document.getElementById('autocomplete').placeholder = 'Enter a city';
+                    // clearResults();
+                    // clearMarkers();
+                });
 
             var userPosition = getUserCurrentPosition().then(function (pos) {
-                markerUserPosition(vm.map, pos);
+                markerUserPosition(map, pos);
+                displayHotelsPosition(pos, 5000);
+                //To direct
+                console.log('pos: ' + JSON.stringify(pos));
+                directionsSv.setOrigin(pos);
+                geocodeLatLng(pos).then(function (address) {
+                    console.log('address: ' + JSON.stringify(address));
+                    document.getElementById('autocomplete').value = address;
+                });
+                //Load local BD
+                // searchLocalPosition(pos, 5000);
             });
-            
+
         }
 
         function getUserCurrentPosition() {
             var deferred = $q.defer();
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(function (position) {
+                    console.log('position: ' + JSON.stringify(position));
                     var pos = {
                         lat: position.coords.latitude,
                         lng: position.coords.longitude
@@ -129,7 +182,7 @@
 
         function markerUserPosition(map, position) {
             map.setCenter(position);
-            map.setZoom(17);
+            map.setZoom(13);
 
             var marker = new google.maps.Marker({
                 position: position,
@@ -137,65 +190,73 @@
                 icon: '/src/client/assets/images/person-location.png',
                 title: 'Vị trí của bạn'
             });
-            
-        }
 
-        function searchLocalPosition(start, distance) {
-            return hotelService.getHotelsPositionByDistance(start, distance);
-        }
-        // When the user selects a city, get the place details for the city and
-        // zoom the map in on the city.
-        function onPlaceChanged() {
-            var place = vm.autocomplete.getPlace();
-            console.log('place: ' + place);
-            // var promise = geocodeLatLng(place.geometry.location);
-            //vm.origin = place.geometry.location;
-            // vm.origin = document.getElementById('autocomplete').value;
-
-            search();
-            if (place.geometry) {
-                // map.panTo(place.geometry.location);
-                map.setCenter(place.geometry.location);
-                map.setZoom(15);
-                search();
-            } else {
-                document.getElementById('autocomplete').placeholder = 'Enter a city';
-            }
         }
 
         // Search for hotels in the selected city, within the viewport of the map.
-        function search() {
+        function search(location, radius) {
+            markerUserPosition(map, location);
             var search = {
-                bounds: map.getBounds(),
-                radius: '500',
+                // bounds: map.getBounds(),
+                location: location,
+                radius: radius,
                 types: ['lodging']
             };
 
-            vm.places.nearbySearch(search, function (results, status) {
+            var deferred = $q.defer();
+
+            places.nearbySearch(search, function (results, status) {
+                console.log('results: ' + results);
                 if (status === google.maps.places.PlacesServiceStatus.OK) {
                     clearResults();
                     clearMarkers();
-                    // Create a marker for each hotel found, and
-                    // assign a letter of the alphabetic to each marker icon.
-                    for (var i = 0; i < results.length; i++) {
-                        // var markerLetter = String.fromCharCode('A'.charCodeAt(0) + (i % 26));
-                        // var markerIcon = MARKER_PATH + markerLetter + '.png';
-                        // Use marker animation to drop the icons incrementally on the map.
-                        markers[i] = new google.maps.Marker({
-                            position: results[i].geometry.location,
-                            animation: google.maps.Animation.DROP,
-                            label: (i + 1).toString(),
-                            // icon: markerIcon
-                        });
-                        // If the user clicks a hotel marker, show the details of that hotel
-                        // in an info window.
-                        markers[i].placeResult = results[i];
-                        google.maps.event.addListener(markers[i], 'click', showInfoWindow);
-                        setTimeout(dropMarker(i), i * 100);
-                        addResult(results[i], i);
-                    }
+
+                    deferred.resolve(results);
+
                 }
             });
+
+            return deferred.promise;
+        }
+
+        function displayHotelsPosition(location, radius) {
+            //Local BD
+            var arr = hotelService.getHotelsPositionByDistance(directionsSv.getOrigin, 5000).then(function(){
+                
+            });
+            console.log('arr: ' +JSON.stringify(arr) );
+            var resultsPosition= [];
+            //Near by search
+            search(location, radius).then(function(results){
+                resultsPosition = results;
+                console.log('resultsPosition: ' + resultsPosition.length);
+            });
+            
+            // Create a marker for each hotel found, and
+            // assign a letter of the alphabetic to each marker icon.
+            for (var i = 0; i < results.length; i++) {
+                // var markerLetter = String.fromCharCode('A'.charCodeAt(0) + (i % 26));
+                // var markerIcon = MARKER_PATH + markerLetter + '.png';
+                // Use marker animation to drop the icons incrementally on the map.
+                markers[i] = new google.maps.Marker({
+                    position: results[i].geometry.location,
+                    animation: google.maps.Animation.DROP,
+                    label: (i + 1).toString(),
+                    // icon: markerIcon
+                });
+                // If the user clicks a hotel marker, show the details of that hotel
+                // in an info window.
+                markers[i].placeResult = results[i];
+                google.maps.event.addListener(markers[i], 'click', showInfoWindow);
+                setTimeout(dropMarker(i), i * 50);
+                addResult(results[i], i);
+            }
+        }
+
+        function dropMarker(i) {
+            return function () {
+                markers[i].setMap(map);
+            };
         }
 
         function clearMarkers() {
@@ -207,28 +268,11 @@
             markers = [];
         }
 
-        // Set the country restriction based on user input.
-        // Also center and zoom the map on the given country.
-        function setAutocompleteCountry() {
-            var country = document.getElementById('country').value;
-            if (country === 'all') {
-                vm.autocomplete.setComponentRestrictions({ 'country': [] });
-                map.setCenter({ lat: 15, lng: 0 });
-                map.setZoom(2);
-            } else {
-                vm.autocomplete.setComponentRestrictions({ 'country': country });
-                map.setCenter(countries[country].center);
-                map.setZoom(countries[country].zoom);
+        function clearResults() {
+            var results = document.getElementById('results');
+            while (results.childNodes[0]) {
+                results.removeChild(results.childNodes[0]);
             }
-            document.getElementById('autocomplete').placeholder = 'Enter a city';
-            clearResults();
-            clearMarkers();
-        }
-
-        function dropMarker(i) {
-            return function () {
-                markers[i].setMap(map);
-            };
         }
 
         //Hiển thị danh sách
@@ -262,40 +306,31 @@
             results.appendChild(tr);
         }
 
-        function clearResults() {
-            var results = document.getElementById('results');
-            while (results.childNodes[0]) {
-                results.removeChild(results.childNodes[0]);
-            }
-        }
-
         // Get the place details for a hotel. Show the information in an info window,
         // anchored on the marker for the hotel that the user selected.
         function showInfoWindow() {
-
             var marker = this;
-            vm.places.getDetails({ placeId: marker.placeResult.place_id },
+            places.getDetails({ placeId: marker.placeResult.place_id },
                 function (place, status) {
-                    console.log('placennnn' + JSON.stringify(place));
                     if (status !== google.maps.places.PlacesServiceStatus.OK) {
                         return;
                     }
-                    vm.infoWindow.open(vm.map, marker);
+                    infoWindow.open(map, marker);
+                    //To directions
+                    directionsSv.setDestination(place.geometry.location);
                     buildIWContent(place);
                 });
         }
 
         // Load the place information into the HTML elements used by the info window.
         function buildIWContent(place) {
-            // console.log('place: ' + JSON.stringify(place));
             document.getElementById('iw-icon').innerHTML = '<img class="hotelIcon" ' +
                 'src="' + place.icon + '"/>';
             // console.log(place);
             document.getElementById('iw-url').innerHTML = '<b><a href="' + place.url +
                 '">' + place.name + '</a></b>';
             document.getElementById('iw-address').textContent = place.vicinity;
-            //To directions
-            vm.destination = place.vicinity;
+
 
             if (place.formatted_phone_number) {
                 document.getElementById('iw-phone-row').style.display = '';
@@ -339,72 +374,13 @@
             }
         }
 
-        //Run when load website
-        function loadCurrentPosition() {
-            map = new google.maps.Map(document.getElementById('map'), {
-                center: { lat: 10.8482599, lng: 106.7841407 },
-                zoom: 15
-            });
-            infoWindow = new google.maps.InfoWindow;
-            var deferred = $q.defer();
-
-            if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(function (position) {
-                    var pos = {
-                        lat: position.coords.latitude,
-                        lng: position.coords.longitude
-                    };
-
-                    var place = pos;
-
-                    if (place) {
-                        map.panTo(place);
-                        map.setZoom(15);
-
-                        var promise = geocodeLatLng(pos);
-                        promise.then(function () {
-                            // document.getElementById('autocomplete').value = vm.address;
-                            //To direction 
-                            // vm.origin = vm.address;
-                            // console.log('origin1: ' + vm.origin);
-
-                        }, function () {
-                            alert('Loi roi');
-                        });
-
-                        console.log('geocode: ' + JSON.stringify(geocodeLatLng(pos)));
-                        document.getElementById('autocomplete').placeholder = vm.address;
-                        search();
-                    } else {
-                        document.getElementById('autocomplete').placeholder = 'Enter a city';
-                    }
-
-                }, function () {
-                    handleLocationError(true, infoWindow, map.getCenter());
-                });
-            } else {
-                // Browser doesn't support Geolocation
-                handleLocationError(false, infoWindow, map.getCenter());
-            }
-        }
-
-        function handleLocationError(browserHasGeolocation, infoWindow, pos) {
-            infoWindow.setPosition(pos);
-            infoWindow.setContent(browserHasGeolocation ?
-                'Error: The Geolocation service failed.' :
-                'Error: Your browser doesn\'t support geolocation.'
-            );
-            infoWindow.open(map);
-        }
-
         //Convert from latlng to address
         function geocodeLatLng(currentPosition) {
-            var input = currentPosition;
-            // console.log('input: ' + (input.lat));
-            // var latlngStr = input.split(',', 2);
-            var latlng = { lat: parseFloat(input.lat), lng: parseFloat(input.lng) };
+
+            var latlng = { lat: parseFloat(currentPosition.lat), lng: parseFloat(currentPosition.lng) };
             return $q(function (resolve, reject) {
-                vm.geocoder.geocode({ 'location': latlng }, function (results, status) {
+                var geocoder = new google.maps.Geocoder();
+                geocoder.geocode({ 'location': latlng }, function (results, status) {
                     if (status === 'OK') {
                         if (results[1]) {
                             results[1].formatted_address;
@@ -424,6 +400,8 @@
             });
 
         }
+
     }
+
 
 })();
