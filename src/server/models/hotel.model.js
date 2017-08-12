@@ -18,7 +18,6 @@ var hotelSchema = new Schema({
             type: Number, 
             required: true,
         }
-        
         // type: Coordinates
     },
     phone: {

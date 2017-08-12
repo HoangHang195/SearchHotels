@@ -21,13 +21,8 @@ function convertHotelModelToHotelResponse(hotelModel) {
 }
 
 function registerHotel(request) {
-    // var distance = geolib.getDistance(
-    //     { latitude: 52.5103, longitude: 7.49347 },
-    //     { latitude: "51° 31' N", longitude: "7° 28' E" }
-    // );
-    // console.log("Distance: " + distance);
-    // getHotelsPositionByDistance();
-    return Hotel.findOne({ location: request.location})
+
+    return Hotel.findOne({ location: request.location })
         .then((hotel) => {
             console.log('0');
             if (hotel) {
@@ -36,7 +31,6 @@ function registerHotel(request) {
                     message: failMessage.hotel.register.duplicateHotel
                 });
             }
-
 
             var newHotel = new Hotel({
                 name: request.name,
@@ -76,19 +70,34 @@ function registerHotel(request) {
         });
 }
 
-function getHotelsPositionByDistance(request){
-    
-    return Hotel.find({}, {"location": 1, "_id": 0}).exec()
-    .then(function(listPosition){
-        return Promise.resolve({
-             message: successMessage.hotel.register,
-             listPosition: listPosition
+function getHotelsPositionByDistance(request) {
+
+    return Hotel.find({}, { "location": 1, "_id": 0 }).exec()
+        .then(function (listPosition) {
+            console.log('listPosition: ' + listPosition[0].location);
+            var results = [];
+            listPosition.forEach(function (position) {
+                console.log('position: ' + position.location);
+                //location: {longitude, latitude} => {latitude, longitude}
+                var permutePosition = {latitude: position.location.latitude, longitude: position.location.longitude}
+                console.log('permutePosition: ' + JSON.stringify(permutePosition.latitude) );
+                var distance = geolib.getDistance(permutePosition, { latitude: 12.661299, longitude: 107.8876178});
+                console.log('distance: ' + distance);
+                console.log('request: ' + JSON.stringify(request.distance));
+                if(distance <= request.distance){
+                    results.push(permutePosition);
+                }
+            });
+
+            return Promise.resolve({
+                message: successMessage.hotel.getHotelsPositionByDistance,
+                results: results
+            });
+        })
+        .catch((err) => {
+            console.log('err:' + err);
+            return err;
         });
-    })
-    .catch((err) =>{
-        console.log('err:' + err);
-        return err;
-    });
     //db.collection.find(query, projection)
     // var value = Hotel.find({}, {"name": 1, "_id": 0});
     // console.log("value: " + value);

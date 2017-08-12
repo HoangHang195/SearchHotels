@@ -6,7 +6,7 @@
         'app.layout',
         'app.dashboard',
         'app.homepage',
-        'app.gmap',
+        'app.hotelRegister',
         'app.listhotels',
         'app.directions',
         'app.register',
