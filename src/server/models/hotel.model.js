@@ -2,7 +2,11 @@ var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
 
 var hotelSchema = new Schema({
-    name: { 
+    userId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'user'
+    },
+    name: {
         type: String,
         required: true
     },
@@ -10,12 +14,12 @@ var hotelSchema = new Schema({
         type: String
     },
     location: {
-        latitude: { 
+        latitude: {
             type: Number,
             required: true
         },
         longitude: {
-            type: Number, 
+            type: Number,
             required: true,
         }
         // type: Coordinates
@@ -34,7 +38,7 @@ var hotelSchema = new Schema({
     },
     rating: {
         type: Number
-    }, 
+    },
     reviews: {
         type: String,
     },
@@ -44,7 +48,7 @@ var hotelSchema = new Schema({
     vicinity: {
         type: String,
     },
-    
+
 });
 
 var hotel = mongoose.model('hotel', hotelSchema);

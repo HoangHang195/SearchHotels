@@ -19,7 +19,7 @@ app.use(bodyParser.json());
 app.use(logger('dev'));
 
 app.use('/api/hotel', require('./routes/hotel.route')());
-app.use('/api/user', require('./routes/user.route')());
+app.use('/api/auth', require('./routes/user.route')());
 
 console.log('About to crank up node');
 console.log('PORT=' + port);

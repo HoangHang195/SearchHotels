@@ -13,6 +13,7 @@ module.exports = function () {
 
     function registerHotel(req, res, next) {
         var request = {
+            userId: req.body.userId,
             name: req.body.name,
             address: req.body.address,
             location: req.body.location,

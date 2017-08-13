@@ -4,12 +4,14 @@
     angular.module('app', [
 
         'app.layout',
-        'app.dashboard',
         'app.homepage',
         'app.hotelRegister',
         'app.listhotels',
         'app.directions',
         'app.register',
+        'app.auth',
+        'app.signin',
+        'app.signup',
 
         
 

@@ -70,6 +70,7 @@
         var markers = [];
         var map, places;
         var MARKER_PATH = 'https://developers.google.com/maps/documentation/javascript/images/marker_green';
+        var hostnameRegexp = new RegExp('^https?://.+?/');
         var infoWindow = new google.maps.InfoWindow({
             content: document.getElementById('info-content')
         });

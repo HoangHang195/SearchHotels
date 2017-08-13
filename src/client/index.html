@@ -66,7 +66,9 @@
     <!-- build:js js/app.js -->
     <!-- inject:js -->
     <script src="/src/client/app/app.module.js"></script>
-    <script src="/src/client/app/components/dashboard/dashboard.module.js"></script>
+    <script src="/src/client/app/components/auth/auth.module.js"></script>
+    <script src="/src/client/app/components/auth/signin/singin.module.js"></script>
+    <script src="/src/client/app/components/auth/signup/signup.module.js"></script>
     <script src="/src/client/app/components/directions/directions.module.js"></script>
     <script src="/src/client/app/components/homepage/homepage.module.js"></script>
     <script src="/src/client/app/components/hotelRegister/hotelRegister.module.js"></script>
@@ -77,8 +79,12 @@
     <script src="/src/client/app/shared/blocks/logger/logger.module.js"></script>
     <script src="/src/client/app/shared/blocks/router/router.module.js"></script>
     <script src="/src/client/app/components/404/app.route.js"></script>
-    <script src="/src/client/app/components/dashboard/dashboard.controller.js"></script>
-    <script src="/src/client/app/components/dashboard/dashboard.route.js"></script>
+    <script src="/src/client/app/components/auth/auth.controller.js"></script>
+    <script src="/src/client/app/components/auth/auth.route.js"></script>
+    <script src="/src/client/app/components/auth/signin/singin.controller.js"></script>
+    <script src="/src/client/app/components/auth/signin/singin.route.js"></script>
+    <script src="/src/client/app/components/auth/signup/signup.controller.js"></script>
+    <script src="/src/client/app/components/auth/signup/signup.route.js"></script>
     <script src="/src/client/app/components/directions/directions.controller.js"></script>
     <script src="/src/client/app/components/directions/directions.route.js"></script>
     <script src="/src/client/app/components/homepage/homepage.controller.js"></script>
@@ -98,6 +104,7 @@
     <script src="/src/client/app/shared/blocks/toastr/constants.js"></script>
     <script src="/src/client/app/shared/blocks/toastr/toastr.config.js"></script>
     <script src="/src/client/app/shared/directives/ng-enter.directive.js"></script>
+    <script src="/src/client/app/shared/services/auth.service.js"></script>
     <script src="/src/client/app/shared/services/directions.service.js"></script>
     <script src="/src/client/app/shared/services/errorTranslator.js"></script>
     <script src="/src/client/app/shared/services/hotel.service.js"></script>
