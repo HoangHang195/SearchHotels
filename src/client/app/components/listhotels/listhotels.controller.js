@@ -76,30 +76,6 @@
 
         vm.initMap = initMap;
 
-        // function searchLocalPosition(start, distance) {
-        //     var arr = hotelService.getHotelsPositionByDistance(start, distance);
-        //     console.log('arr: ' + arr);
-
-        //     for (var i = 0; i < results.length; i++) {
-        //         // var markerLetter = String.fromCharCode('A'.charCodeAt(0) + (i % 26));
-        //         // var markerIcon = MARKER_PATH + markerLetter + '.png';
-        //         // Use marker animation to drop the icons incrementally on the map.
-        //         markers[i] = new google.maps.Marker({
-        //             position: results[i].geometry.location,
-        //             animation: google.maps.Animation.DROP,
-        //             label: (i + 1).toString(),
-        //             // icon: markerIcon
-        //         });
-        //         // If the user clicks a hotel marker, show the details of that hotel
-        //         // in an info window.
-        //         markers[i].placeResult = results[i];
-        //         google.maps.event.addListener(markers[i], 'click', showInfoWindow);
-        //         setTimeout(dropMarker(i), i * 50);
-        //         addResult(results[i], i);
-        //     }
-
-        // }
-
         function initMap() {
             map = new google.maps.Map(document.getElementById('map'), {
                 zoom: countries['vn'].zoom,
@@ -151,6 +127,7 @@
 
             var userPosition = getUserCurrentPosition().then(function (pos) {
                 markerUserPosition(map, pos);
+
                 displayHotelsPosition(pos, 5000);
                 //To direct
                 console.log('pos: ' + JSON.stringify(pos));
@@ -206,13 +183,12 @@
             var deferred = $q.defer();
 
             places.nearbySearch(search, function (results, status) {
-                console.log('results: ' + results);
+                console.log('results       fdf: ' + results);
                 if (status === google.maps.places.PlacesServiceStatus.OK) {
                     clearResults();
                     clearMarkers();
 
                     deferred.resolve(results);
-
                 }
             });
 
@@ -220,37 +196,42 @@
         }
 
         function displayHotelsPosition(location, radius) {
-            //Local BD
-            var arr = hotelService.getHotelsPositionByDistance(directionsSv.getOrigin, 5000).then(function(){
-                
-            });
-            console.log('arr: ' +JSON.stringify(arr) );
-            var resultsPosition= [];
+
+            var resultsPosition = [];
             //Near by search
-            search(location, radius).then(function(results){
-                resultsPosition = results;
-                console.log('resultsPosition: ' + resultsPosition.length);
+            search(location, radius).then(function (results) {
+                // resultsPosition = results;
+                console.log('resultsPosition: ');
+
+                // Create a marker for each hotel found, and
+                // assign a letter of the alphabetic to each marker icon.
+                for (var i = 0; i < results.length; i++) {
+                    // var markerLetter = String.fromCharCode('A'.charCodeAt(0) + (i % 26));
+                    // var markerIcon = MARKER_PATH + markerLetter + '.png';
+                    // Use marker animation to drop the icons incrementally on the map.
+                    markers[i] = new google.maps.Marker({
+                        position: results[i].geometry.location,
+                        animation: google.maps.Animation.DROP,
+                        label: (i + 1).toString(),
+                        // icon: markerIcon
+                    });
+                    // If the user clicks a hotel marker, show the details of that hotel
+                    // in an info window.
+                    markers[i].placeResult = results[i];
+                    google.maps.event.addListener(markers[i], 'click', showInfoWindow);
+                    setTimeout(dropMarker(i), i * 50);
+                    addResult(results[i], i);
+                }
             });
+
+            //Local BD
+            var origin = directionsSv.getOrigin();
+            var start = {latitude: origin.lat, longitude: origin.lng};
+            console.log('start: ' + (start.latitude));
             
-            // Create a marker for each hotel found, and
-            // assign a letter of the alphabetic to each marker icon.
-            for (var i = 0; i < results.length; i++) {
-                // var markerLetter = String.fromCharCode('A'.charCodeAt(0) + (i % 26));
-                // var markerIcon = MARKER_PATH + markerLetter + '.png';
-                // Use marker animation to drop the icons incrementally on the map.
-                markers[i] = new google.maps.Marker({
-                    position: results[i].geometry.location,
-                    animation: google.maps.Animation.DROP,
-                    label: (i + 1).toString(),
-                    // icon: markerIcon
-                });
-                // If the user clicks a hotel marker, show the details of that hotel
-                // in an info window.
-                markers[i].placeResult = results[i];
-                google.maps.event.addListener(markers[i], 'click', showInfoWindow);
-                setTimeout(dropMarker(i), i * 50);
-                addResult(results[i], i);
-            }
+            var arr = hotelService.getHotelsPositionByDistance(start, 6000).then(function(localPosition){
+                console.log('localPosition: ' + JSON.stringify(localPosition) );
+            });
         }
 
         function dropMarker(i) {

@@ -8,7 +8,7 @@ module.exports = function () {
 
 
     router.post('/hotelRegister', registerHotel);
-    router.get('/getHotelsPositionByDistance/:start/:distance', getHotelsPositionByDistance);
+    router.get('/getHotelsPositionByDistance/:origin/:distance', getHotelsPositionByDistance);
 
 
     function registerHotel(req, res, next) {
@@ -40,10 +40,10 @@ module.exports = function () {
 
     function getHotelsPositionByDistance(req, res, next) {
         var request = {
-            start: req.params.start,
-            // end: req.params.end,
+            origin: req.params.origin,
             distance: req.params.distance
         };
+        console.log('route origin: ' + JSON.stringify((req.params.distance)));
         hotelDao.getHotelsPositionByDistance(request)
             .then((response) => {
                 res.status(200).send(response).end();

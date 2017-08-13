@@ -53,8 +53,8 @@ function registerHotel(request) {
                         hotel: convertHotelModelToHotelResponse(response)
                     });
 
-                }).catch(() => {
-                    console.log('1');
+                }).catch((err) => {
+                    console.log('err1: ' + err);
                     return Promise.reject({
                         message: failMessage.hotel.register.systemErr
                     });
@@ -81,11 +81,11 @@ function getHotelsPositionByDistance(request) {
                 //location: {longitude, latitude} => {latitude, longitude}
                 var permutePosition = {latitude: position.location.latitude, longitude: position.location.longitude};
                 // var permuteStartPosition = {latitude: request.start.latitude, longitude: request.start.longitude};
+                console.log('start: ' + JSON.stringify(request.origin));
+                console.log('permutePosition: ' + JSON.stringify(permutePosition));
 
-                console.log('start: ' + request.start);
-                console.log('distance: ' + request.distance);
-                var distance = geolib.getDistance(request.start, permutePosition);//{latitude: -33.867591, longitude: 151.201196}
-                
+                var distance = geolib.getDistance(request.origin, permutePosition);//{latitude: -33.867591, longitude: 151.201196}
+                console.log('distance: ' + distance);
                 // console.log('request: ' + JSON.stringify(request.distance));
                 if(distance <= request.distance){
                     results.push(permutePosition);
