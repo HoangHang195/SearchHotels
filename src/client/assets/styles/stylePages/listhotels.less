@@ -3,17 +3,24 @@
     height: 525px;
     // width: 100%;
     overflow-y: scroll;
+    // float: right;
   }
   /* Optional: Makes the sample page fill the window. */
 
   table {
-    font-size: 12px;
+    font-size: 15px;
+    font-weight: 500;
+    background-color: beige;
   }
   
-  #listing {
-    height: 600px;
+#listing {
+    height: 525px;
     overflow-y: scroll;
+    // float: left;
   }
+#listing #resultsTable{
+  width: 100%;
+}
 
 #searchBar #custom-search-input {
     margin:0;
@@ -32,4 +39,30 @@
     border-radius: 3px;
     color:black;
 }
+
+#info-content table {
+}
+
+/* PC DISPLAY*/
+
+@media only screen 
+and (max-device-width: 768px) {
+    #layoutContainer{
+        width: 100%;
+    }
+}
+
+
+/* PHONE DISPLAY*/
+
+@media only screen
+and (max-device-width: 767px) 
+and (min-device-width: 300px){
+    #layoutHeader #brand span{
+        font-size: 30px;
+    }
+    #layoutHeader img{
+        margin-top: 10px;
+    }
     
+}

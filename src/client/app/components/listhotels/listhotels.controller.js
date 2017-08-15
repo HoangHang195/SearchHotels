@@ -98,8 +98,8 @@
                 if (place.geometry) {
                     // map.panTo(place.geometry.location);
                     map.setCenter(place.geometry.location);
-                    map.setZoom(10);
-                    displayHotelsPosition(place.geometry.location, 5000);
+                    map.setZoom(15);
+                    displayHotelsPosition(place.geometry.location, 1000);
                     //To direct 
                     directionsSv.setOrigin(place.geometry.location);
 
@@ -129,7 +129,7 @@
             var userPosition = getUserCurrentPosition().then(function (pos) {
                 markerUserPosition(map, pos);
 
-                displayHotelsPosition(pos, 5000);
+                displayHotelsPosition(pos, 1000);
                 //To direct
                 console.log('pos: ' + JSON.stringify(pos));
                 directionsSv.setOrigin(pos);
@@ -147,11 +147,12 @@
             var deferred = $q.defer();
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(function (position) {
-                    console.log('position: ' + JSON.stringify(position));
+                    console.log('position: ' + JSON.stringify(position.coords.latitude));
                     var pos = {
                         lat: position.coords.latitude,
                         lng: position.coords.longitude
                     };
+                    console.log('current position: ' + JSON.stringify(pos));
                     deferred.resolve(pos);
                 })
             }
@@ -160,7 +161,7 @@
 
         function markerUserPosition(map, position) {
             map.setCenter(position);
-            map.setZoom(13);
+            map.setZoom(15);
 
             var marker = new google.maps.Marker({
                 position: position,
@@ -170,7 +171,7 @@
             });
 
         }
-
+ 
         // Search for hotels in the selected city, within the viewport of the map.
         function search(location, radius) {
             markerUserPosition(map, location);
@@ -198,23 +199,42 @@
 
         function displayHotelsPosition(location, radius) {
 
-            var resultsPosition = [];
+            //var resultsPosition = [];
+
+            //get local DB
+            var currentPosition = getUserCurrentPosition().then(function(pos){
+                var start = {latitude: pos.lat, longitude: pos.lng};
+                
+                var arr = hotelService.getHotelsPositionByDistance(start, 6000).then(function(localPosition){
+
+                    console.log('localPosition: ' + JSON.stringify(localPosition.results) );
+
+                });
+            });
+            
+
+            
+
             //Near by search
             search(location, radius).then(function (results) {
                 // resultsPosition = results;
-                console.log('resultsPosition: ');
-
+                var a = [];
+                // console.log('searchResultsPosition: ' + results.geometry.location);
+                // for (var i = 0; i < results.length; i++){
+                //     a[i] = results[i].geometry.location;
+                // }
+                console.log('aaaaaaaaaaaaa: ' + a);
                 // Create a marker for each hotel found, and
                 // assign a letter of the alphabetic to each marker icon.
                 for (var i = 0; i < results.length; i++) {
-                    // var markerLetter = String.fromCharCode('A'.charCodeAt(0) + (i % 26));
-                    // var markerIcon = MARKER_PATH + markerLetter + '.png';
+                    var markerLetter = String.fromCharCode('A'.charCodeAt(0) + (i % 26));
+                    var markerIcon = MARKER_PATH + markerLetter + '.png';
                     // Use marker animation to drop the icons incrementally on the map.
                     markers[i] = new google.maps.Marker({
                         position: results[i].geometry.location,
                         animation: google.maps.Animation.DROP,
-                        label: (i + 1).toString(),
-                        // icon: markerIcon
+                        // label: (i + 1).toString(),
+                        icon: markerIcon
                     });
                     // If the user clicks a hotel marker, show the details of that hotel
                     // in an info window.
@@ -225,14 +245,7 @@
                 }
             });
 
-            //Local BD
-            var origin = directionsSv.getOrigin();
-            var start = {latitude: origin.lat, longitude: origin.lng};
-            console.log('start: ' + (start.latitude));
             
-            var arr = hotelService.getHotelsPositionByDistance(start, 6000).then(function(localPosition){
-                console.log('localPosition: ' + JSON.stringify(localPosition) );
-            });
         }
 
         function dropMarker(i) {
@@ -257,7 +270,7 @@
             }
         }
 
-        //Hiển thị danh sách
+        //display list hotels
         function addResult(result, i) {
             var results = document.getElementById('results');
             var markerLetter = String.fromCharCode('A'.charCodeAt(0) + (i % 26));
@@ -307,7 +320,7 @@
         // Load the place information into the HTML elements used by the info window.
         function buildIWContent(place) {
             document.getElementById('iw-icon').innerHTML = '<img class="hotelIcon" ' +
-                'src="' + place.icon + '"/>';
+                'src="/src/client/assets/images/hotel_name.png"/>';
             // console.log(place);
             document.getElementById('iw-url').innerHTML = '<b><a href="' + place.url +
                 '">' + place.name + '</a></b>';

@@ -8,7 +8,7 @@ module.exports = function () {
 
 
     router.post('/hotelRegister', registerHotel);
-    router.get('/getHotelsPositionByDistance/:origin/:distance', getHotelsPositionByDistance);
+    router.get('/getHotelsPositionByDistance/:latOrigin/:lngOrigin/:distance', getHotelsPositionByDistance);
 
 
     function registerHotel(req, res, next) {
@@ -38,13 +38,13 @@ module.exports = function () {
                 // next(err);
             });
     }
-
+ 
     function getHotelsPositionByDistance(req, res, next) {
         var request = {
-            origin: req.params.origin,
+            latOrigin: req.params.latOrigin,
+            lngOrigin: req.params.lngOrigin,
             distance: req.params.distance
         };
-        console.log('route origin: ' + JSON.stringify((req.params.distance)));
         hotelDao.getHotelsPositionByDistance(request)
             .then((response) => {
                 res.status(200).send(response).end();
