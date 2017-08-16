@@ -68,6 +68,7 @@
         };
         var countryRestrict = countryRestrict = { 'country': 'vn' };
         var markers = [];
+        var markerUser = '';
         var map, places;
         var MARKER_PATH = 'https://developers.google.com/maps/documentation/javascript/images/marker_green';
         var hostnameRegexp = new RegExp('^https?://.+?/');
@@ -94,15 +95,19 @@
 
             autocomplete.addListener('place_changed', function () {
                 var place = autocomplete.getPlace();
-                console.log('place: ' + place);
                 if (place.geometry) {
                     // map.panTo(place.geometry.location);
                     map.setCenter(place.geometry.location);
                     map.setZoom(15);
-                    displayHotelsPosition(place.geometry.location, 1000);
+                    console.log('place: ' + place.geometry.location);
+                    //convert (10.8119067, 106.70933760000003) => {lat: 10.8119067, lng: 106.70933760000003}
+                    var arr = place.geometry.location.toString().split(",");
+                    var lat = Number((arr[0].split('('))[1]);
+                    var lng = Number((arr[1].split(')'))[0]);
+                    var latLng = { lat: lat, lng: lng };
+                    displayHotelsPosition(latLng, 1000);
                     //To direct 
                     directionsSv.setOrigin(place.geometry.location);
-
                 } else {
                     document.getElementById('autocomplete').placeholder = 'Enter a city';
                 }
@@ -125,29 +130,22 @@
                     // clearResults();
                     // clearMarkers();
                 });
-
+            
             var userPosition = getUserCurrentPosition().then(function (pos) {
                 markerUserPosition(map, pos);
-
                 displayHotelsPosition(pos, 1000);
                 //To direct
-                console.log('pos: ' + JSON.stringify(pos));
                 directionsSv.setOrigin(pos);
                 geocodeLatLng(pos).then(function (address) {
-                    console.log('address: ' + JSON.stringify(address));
                     document.getElementById('autocomplete').value = address;
                 });
-                //Load local BD
-                // searchLocalPosition(pos, 5000);
             });
-
         }
 
         function getUserCurrentPosition() {
             var deferred = $q.defer();
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(function (position) {
-                    console.log('position: ' + JSON.stringify(position.coords.latitude));
                     var pos = {
                         lat: position.coords.latitude,
                         lng: position.coords.longitude
@@ -169,11 +167,17 @@
                 icon: '/src/client/assets/images/person-location.png',
                 title: 'Vị trí của bạn'
             });
-
+            markerUser = marker;
         }
- 
+
+        function clearMarkerUserPosition() {
+            markerUser.setMap(null);
+            markerUser = '';
+        }
+
         // Search for hotels in the selected city, within the viewport of the map.
         function search(location, radius) {
+            clearMarkerUserPosition();
             markerUserPosition(map, location);
             var search = {
                 // bounds: map.getBounds(),
@@ -185,7 +189,6 @@
             var deferred = $q.defer();
 
             places.nearbySearch(search, function (results, status) {
-                console.log('results       fdf: ' + results);
                 if (status === google.maps.places.PlacesServiceStatus.OK) {
                     clearResults();
                     clearMarkers();
@@ -193,39 +196,15 @@
                     deferred.resolve(results);
                 }
             });
-
             return deferred.promise;
         }
 
         function displayHotelsPosition(location, radius) {
-
-            //var resultsPosition = [];
-
-            //get local DB
-            var currentPosition = getUserCurrentPosition().then(function(pos){
-                var start = {latitude: pos.lat, longitude: pos.lng};
-                
-                var arr = hotelService.getHotelsPositionByDistance(start, 6000).then(function(localPosition){
-
-                    console.log('localPosition: ' + JSON.stringify(localPosition.results) );
-
-                });
-            });
-            
-
-            
-
             //Near by search
             search(location, radius).then(function (results) {
-                // resultsPosition = results;
-                var a = [];
-                // console.log('searchResultsPosition: ' + results.geometry.location);
-                // for (var i = 0; i < results.length; i++){
-                //     a[i] = results[i].geometry.location;
-                // }
-                console.log('aaaaaaaaaaaaa: ' + a);
                 // Create a marker for each hotel found, and
                 // assign a letter of the alphabetic to each marker icon.
+                console.log('results[0].geometry.location: ' + results[0].geometry.location);
                 for (var i = 0; i < results.length; i++) {
                     var markerLetter = String.fromCharCode('A'.charCodeAt(0) + (i % 26));
                     var markerIcon = MARKER_PATH + markerLetter + '.png';
@@ -243,9 +222,37 @@
                     setTimeout(dropMarker(i), i * 50);
                     addResult(results[i], i);
                 }
-            });
 
-            
+                //get local DB around current position
+                var start = { latitude: location.lat, longitude: location.lng };
+                console.log('location1: ' + JSON.stringify(location));
+                console.log('location2: ' + JSON.stringify(start));
+                var arr = hotelService.getHotelsPositionByDistance(start, radius).then(function (localPosition) {
+                    console.log('localPosition: ' + JSON.stringify(localPosition.results[0]));
+                    console.log('localPosition.length: ' + localPosition.results.length);
+                    for (var i = results.length; i < results.length + localPosition.results.length; i++) {
+                        var markerLetter = String.fromCharCode('A'.charCodeAt(0) + (i % 26));
+                        var markerIcon = MARKER_PATH + markerLetter + '.png';
+                        var latLng = {
+                            lat: localPosition.results[i - results.length].latitude,
+                            lng: localPosition.results[i - results.length].longitude,
+                        }
+                        // Use marker animation to drop the icons incrementally on the map.
+                        markers[i] = new google.maps.Marker({
+                            position: latLng,
+                            animation: google.maps.Animation.DROP,
+                            label: (i - results.length + 1).toString(),
+                            // icon: markerIcon
+                        });
+                        // If the user clicks a hotel marker, show the details of that hotel
+                        // in an info window.
+                        markers[i].placeResult = results[i];
+                        google.maps.event.addListener(markers[i], 'click', showInfoWindow);
+                        setTimeout(dropMarker(i), i * 50);
+                        // addResult(results[i], i);
+                    }
+                });
+            });
         }
 
         function dropMarker(i) {
@@ -269,7 +276,6 @@
                 results.removeChild(results.childNodes[0]);
             }
         }
-
         //display list hotels
         function addResult(result, i) {
             var results = document.getElementById('results');
@@ -281,7 +287,6 @@
             tr.onclick = function () {
                 google.maps.event.trigger(markers[i], 'click');
             };
-
             var iconTd = document.createElement('td');
             var nameTd = document.createElement('td');
             // var ratingTd = document.createElement('td');
@@ -325,7 +330,6 @@
             document.getElementById('iw-url').innerHTML = '<b><a href="' + place.url +
                 '">' + place.name + '</a></b>';
             document.getElementById('iw-address').textContent = place.vicinity;
-
 
             if (place.formatted_phone_number) {
                 document.getElementById('iw-phone-row').style.display = '';
@@ -379,10 +383,8 @@
                     if (status === 'OK') {
                         if (results[1]) {
                             results[1].formatted_address;
-
                             vm.address = results[1].formatted_address;
                             resolve(results[1].formatted_address);
-
                         } else {
                             window.alert('No results found');
                             reject(null);
@@ -393,10 +395,6 @@
                     }
                 });
             });
-
         }
-
     }
-
-
 })();

@@ -13,7 +13,6 @@ module.exports = {
     getHotelsPositionByDistance: getHotelsPositionByDistance
 };
 
-
 function convertHotelModelToHotelResponse(hotelModel) {
     var hotelObj = hotelModel.toObject();
 
