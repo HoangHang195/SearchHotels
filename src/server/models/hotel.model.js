@@ -33,21 +33,21 @@ var hotelSchema = new Schema({
     type: {
         type: String
     },
-    photos: {
-        type: String,
-    },
-    rating: {
-        type: Number
-    },
-    reviews: {
-        type: String,
-    },
-    logo: {
-        type: String
-    },
-    vicinity: {
-        type: String,
-    },
+    // photos: {
+    //     type: String,
+    // },
+    // rating: {
+    //     type: Number
+    // },
+    // reviews: {
+    //     type: String,
+    // },
+    // logo: {
+    //     type: String
+    // },
+    // vicinity: {
+    //     type: String,
+    // },
 
 });
 

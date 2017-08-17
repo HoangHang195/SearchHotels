@@ -19,14 +19,9 @@ module.exports = function () {
             location: req.body.location,
             phone: req.body.phone,
             website: req.body.website,
-            type: req.body.type,
-            photos: req.body.photos,
-            rating: req.body.rating,
-            reviews: req.body.reviews,
-            logo: req.body.logo,
-            vicinity: req.body.vicinity,
+            // rating: req.body.rating,
         };
-        console.log("request: " + request);
+        console.log("request: ", request);
         if (request.name === '' || request.address === '' || request.location === '') {
             res.status(403).send(failMessage.hotel.register.input).end();
         }

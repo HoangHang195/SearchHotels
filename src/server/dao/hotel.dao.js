@@ -32,17 +32,14 @@ function registerHotel(request) {
             }
 
             var newHotel = new Hotel({
+                userId: request.userId,
                 name: request.name,
                 address: request.address,
                 location: request.location,
                 phone: request.phone,
                 website: request.website,
-                type: request.type,
-                photos: request.photos,
-                rating: request.rating,
-                reviews: request.reviews,
-                logo: request.logo,
-                vicinity: request.vicinity
+                type: 'lodging',
+                // rating: request.rating,
             });
 
             return newHotel.save()
@@ -71,23 +68,17 @@ function registerHotel(request) {
 
 function getHotelsPositionByDistance(request) {
 
-    return Hotel.find({}, { "location": 1, "_id": 0 }).exec()
-        .then(function (listPosition) {
-            console.log('listPosition: ' + listPosition[0].location);
+    return Hotel.find().exec()
+        .then(function (listHotels) {
             var results = [];
-            listPosition.forEach(function (position) {
-                console.log('position: ' + position.location);
+            listHotels.forEach(function (hotel) {
                 //location: {longitude, latitude} => {latitude, longitude}
-                var permutePosition = {latitude: position.location.latitude, longitude: position.location.longitude};
+                var permutePosition = {latitude: hotel.location.latitude, longitude: hotel.location.longitude};
                 // var permuteStartPosition = {latitude: request.start.latitude, longitude: request.start.longitude};
-                console.log('permutePosition: ' + JSON.stringify(permutePosition));
                 var origin = {latitude: request.latOrigin, longitude: request.lngOrigin};
-                console.log('origin: ' + JSON.stringify(origin));
                 var distance = geolib.getDistance(origin, permutePosition);//{latitude: -33.867591, longitude: 151.201196}
-                console.log('distance: ' + distance);
-                // console.log('request: ' + JSON.stringify(request.distance));
                 if(distance <= request.distance){
-                    results.push(permutePosition);
+                    results.push(hotel);
                 }
             });
 

@@ -10,12 +10,17 @@
     "test": "gulp test"
   },
   "dependencies": {
+    "angular-jwt": "^0.1.9",
     "body-parser": "~1.8.2",
     "express": "~4.9.3",
     "geolib": "^2.0.23",
+    "jsonwebtoken": "^7.4.2",
+    "jwt-decode": "^2.2.0",
     "mongoose": "^4.11.6",
     "morgan": "~1.1.1",
     "ng-infinite-scroll": "^1.3.0",
+    "nodemailer": "^4.0.1",
+    "nodemailer-smtp-transport": "^2.7.4",
     "serve-favicon": "~2.0.1"
   },
   "devDependencies": {

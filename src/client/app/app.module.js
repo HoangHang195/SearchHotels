@@ -16,8 +16,8 @@
         
 
         'ui.router',
-        // 'angular-jwt',
-        // 'ngStorage',
+        'angular-jwt',
+        'ngStorage',
         'ngAnimate',
         'ngSanitize',
         'ngplus',

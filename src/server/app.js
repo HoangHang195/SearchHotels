@@ -13,6 +13,8 @@ var db = require('./db/db.config');
 
 var environment = process.env.NODE_ENV;
 
+process.env.SECRET_KEY = 'thuhang';
+
 app.use(favicon(__dirname + '/favicon.ico'));
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
