@@ -79,7 +79,7 @@
         vm.initMap = initMap;
 
         function initMap() {
-        
+
             map = new google.maps.Map(document.getElementById('map'), {
                 zoom: countries['vn'].zoom,
                 center: countries['vn'].center,
@@ -190,72 +190,91 @@
 
             var deferred = $q.defer();
 
-            // places.nearbySearch(search, function (results, status) {
-            //     if (status === google.maps.places.PlacesServiceStatus.OK) {
-            //         clearResults();
-            //         clearMarkers();
-            //         var hotelsDetails = [];
-            //         console.log('results', results);
-                    
-            //         results.forEach(function (result, index) {
-            //             setTimeout(function () {
-            //                 places.getDetails({ placeId: result.place_id }, function (place, status) {
-            //                     // console.log('status ', status);
-            //                     if (status === google.maps.places.PlacesServiceStatus.OK) {
-            //                         var myResult = {
-            //                             name: place.name,
-            //                             address: place.vicinity,
-            //                             location: result.geometry.location,
-            //                             phone: place.formatted_phone_number,
-            //                             website: place.website,
-            //                             type: place.type,
-            //                             rating: place.rating,
-            //                         }
-            //                         hotelsDetails.push(myResult);
-                                    
-            //                     }
-            //                 });
-            //             }, 10);
+            places.nearbySearch(search, function (results, status) {
+                if (status === google.maps.places.PlacesServiceStatus.OK) {
+                    clearResults();
+                    clearMarkers();
 
-            //         }, this);
+                    deferred.resolve(results);
+                };
+            });
 
-            //         setTimeout(function () {
-            //             deferred.resolve(hotelsDetails);
-            //         }, 1000);
+            return deferred.promise;
+        }
 
-            //     };
-            // });
+        function getDetailsHotels(location, radius) {
+            var deferred = $q.defer();
+
+            var results = [];
+
+            search(location, radius).then(function (results_res) {
+                results = results_res;
+                console.log('results_res', results_res);
+            });
+
+
+            var hotelsDetails = [];
+            setTimeout(function () {
+                console.log('results new', results);
+                results.forEach(function (result, index) {
+                    setTimeout(function () {
+                        places.getDetails({ placeId: result.place_id }, function (place, status) {
+                            console.log('status ', status);
+                            if (status === google.maps.places.PlacesServiceStatus.OK) {
+                                var myResult = {
+                                    name: place.name,
+                                    address: place.vicinity,
+                                    location: result.geometry.location,
+                                    phone: place.formatted_phone_number,
+                                    website: place.website,
+                                    type: place.type,
+                                    rating: place.rating,
+                                }
+                                hotelsDetails.push(myResult);
+
+                            }
+                        });
+                    }, 0);
+
+                }, this);
+            }, 500);
+
+            setTimeout(function () {
+                console.log('deferred.resolve(hotelsDetails)', hotelsDetails);
+                deferred.resolve(hotelsDetails);
+                
+            }, 1000);
 
             return deferred.promise;
         }
 
         function displayHotelsPosition(location, radius) {
-            var results = [];
+            // var results = [];
             //Near by search
-            // search(location, radius).then(function (results) {
+            getDetailsHotels(location, radius).then(function (results) {
                 // Create a marker for each hotel found, and
                 // assign a letter of the alphabetic to each marker icon.
 
-                // for (var i = 0; i < results.length; i++) {
-                //     // console.log('results[i].location', results[i].location);
-                //     var markerLetter = String.fromCharCode('A'.charCodeAt(0) + (i % 26));
-                //     var markerIcon = MARKER_PATH + markerLetter + '.png';
-                //     // Use marker animation to drop the icons incrementally on the map.
-                //     markers[i] = new google.maps.Marker({
-                //         position: results[i].location,
-                //         animation: google.maps.Animation.DROP,
-                //         // label: (i + 1).toString(),
-                //         icon: markerIcon
-                //     });
-                //     // If the user clicks a hotel marker, show the details of that hotel
-                //     // in an info window.
+                for (var i = 0; i < results.length; i++) {
+                    // console.log('results[i].location', results[i].location);
+                    var markerLetter = String.fromCharCode('A'.charCodeAt(0) + (i % 26));
+                    var markerIcon = MARKER_PATH + markerLetter + '.png';
+                    // Use marker animation to drop the icons incrementally on the map.
+                    markers[i] = new google.maps.Marker({
+                        position: results[i].location,
+                        animation: google.maps.Animation.DROP,
+                        // label: (i + 1).toString(),
+                        icon: markerIcon
+                    });
+                    // If the user clicks a hotel marker, show the details of that hotel
+                    // in an info window.
 
-                //     markers[i].placeResult = results[i];
-                //     google.maps.event.addListener(markers[i], 'click', showInfoWindow);
-                    
-                //     setTimeout(dropMarker(i), i * 50);
-                //     addResult(results[i], i);
-                // }
+                    markers[i].placeResult = results[i];
+                    google.maps.event.addListener(markers[i], 'click', showInfoWindow);
+
+                    setTimeout(dropMarker(i), i * 50);
+                    addResult(results[i], i);
+                }
 
                 //get local DB around current position
                 console.log('results: ', results);
@@ -269,23 +288,26 @@
                             lat: localPosition.results[i - results.length].location.latitude,
                             lng: localPosition.results[i - results.length].location.longitude,
                         }
+                        console.log(latLng);
                         // Use marker animation to drop the icons incrementally on the map.
                         markers[i] = new google.maps.Marker({
                             position: latLng,
                             animation: google.maps.Animation.DROP,
                             label: (i - results.length + 1).toString(),
+                            map: map
                             // icon: markerIcon
                         });
+
                         // If the user clicks a hotel marker, show the details of that hotel
                         // in an info window.
-                        markers[i].placeResult = localPosition.results.location[i - results.length];
+                        markers[i].placeResult = localPosition.results[i - results.length];
                         google.maps.event.addListener(markers[i], 'click', showInfoWindow);
                         setTimeout(dropMarker(i), i * 50);
-                        console.log('localPosition.results.location[i - results.length]: ', localPosition.results.location[i - results.length]);
-                        addResult(localPosition.results.location[i - results.length], i - results.length);
+                        console.log('localPosition.results.location[i - results.length]: ', localPosition.results[i - results.length].location);
+                        addResult(localPosition.results[i - results.length], i - results.length);
                     }
                 });
-            // });
+            });
         }
 
         function dropMarker(i) {
@@ -349,12 +371,13 @@
             //         if (status !== google.maps.places.PlacesServiceStatus.OK) {
             //             return;
             //         }
-                    infoWindow.open(map, marker);
-                    //To directions
-                    directionsSv.setDestination(marker.placeResult.location);
-                    buildIWContent(marker.placeResult);
-                    console.log();
-                // });
+            
+            infoWindow.open(map, marker);
+            //To directions
+            directionsSv.setDestination(marker.placeResult.location);
+            buildIWContent(marker.placeResult);
+            console.log();
+            // });
         }
 
         // Load the place information into the HTML elements used by the info window.
