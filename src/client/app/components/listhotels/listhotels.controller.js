@@ -70,16 +70,15 @@
         var markers = [];
         var markerUser = '';
         var map, places;
-        var MARKER_PATH = 'https://developers.google.com/maps/documentation/javascript/images/marker_green';
         var hostnameRegexp = new RegExp('^https?://.+?/');
         var infoWindow = new google.maps.InfoWindow({
             content: document.getElementById('info-content')
         });
-
+        var myRadius = 1000;
+        vm.displayHotelsPosition = displayHotelsPosition;
         vm.initMap = initMap;
 
         function initMap() {
-
             map = new google.maps.Map(document.getElementById('map'), {
                 zoom: countries['vn'].zoom,
                 center: countries['vn'].center,
@@ -106,7 +105,7 @@
                     var lat = Number((arr[0].split('('))[1]);
                     var lng = Number((arr[1].split(')'))[0]);
                     var latLng = { lat: lat, lng: lng };
-                    displayHotelsPosition(latLng, 1000);
+                    displayHotelsPosition(latLng, myRadius);
                     //To direct 
                     directionsSv.setOrigin(place.geometry.location);
                 } else {
@@ -128,15 +127,32 @@
                         map.setZoom(countries[country].zoom);
                     }
                     document.getElementById('autocomplete').placeholder = 'Enter a city';
+                    document.getElementById('autocomplete').value = '';
                     // clearResults();
                     // clearMarkers();
                 });
 
+            document.getElementById('radius').addEventListener(
+                'change', function setRadius() {
+                    var radius = document.getElementById('radius').value;
+                    if (radius === '500') {
+                        myRadius = 500;
+                    } else if (radius === '1000') {
+                        myRadius = 1000;
+                    } else if (radius === '2000') {
+                        myRadius = 2000;
+                    } else if (radius === '3000') {
+                        myRadius = 3000;
+                    } else {
+                        myRadius = 4000;
+                    }
+
+                });
 
             var userPosition = getUserCurrentPosition().then(function (pos) {
 
                 markerUserPosition(map, pos);
-                displayHotelsPosition(pos, 1000);
+                displayHotelsPosition(pos, myRadius);
                 //To direct
                 directionsSv.setOrigin(pos);
                 geocodeLatLng(pos).then(function (address) {
@@ -182,97 +198,40 @@
             clearMarkerUserPosition();
             markerUserPosition(map, location);
             var search = {
-                // bounds: map.getBounds(),
                 location: location,
                 radius: radius,
                 types: ['lodging']
             };
-
             var deferred = $q.defer();
-
             places.nearbySearch(search, function (results, status) {
                 if (status === google.maps.places.PlacesServiceStatus.OK) {
                     clearResults();
                     clearMarkers();
-
                     deferred.resolve(results);
                 };
             });
-
-            return deferred.promise;
-        }
-
-        function getDetailsHotels(location, radius) {
-            var deferred = $q.defer();
-
-            var results = [];
-
-            search(location, radius).then(function (results_res) {
-                results = results_res;
-                console.log('results_res', results_res);
-            });
-
-
-            var hotelsDetails = [];
-            setTimeout(function () {
-                console.log('results new', results);
-                results.forEach(function (result, index) {
-                    setTimeout(function () {
-                        places.getDetails({ placeId: result.place_id }, function (place, status) {
-                            console.log('status ', status);
-                            if (status === google.maps.places.PlacesServiceStatus.OK) {
-                                var myResult = {
-                                    name: place.name,
-                                    address: place.vicinity,
-                                    location: result.geometry.location,
-                                    phone: place.formatted_phone_number,
-                                    website: place.website,
-                                    type: place.type,
-                                    rating: place.rating,
-                                }
-                                hotelsDetails.push(myResult);
-
-                            }
-                        });
-                    }, 0);
-
-                }, this);
-            }, 500);
-
-            setTimeout(function () {
-                console.log('deferred.resolve(hotelsDetails)', hotelsDetails);
-                deferred.resolve(hotelsDetails);
-                
-            }, 1000);
-
             return deferred.promise;
         }
 
         function displayHotelsPosition(location, radius) {
-            // var results = [];
             //Near by search
-            getDetailsHotels(location, radius).then(function (results) {
+            search(location, radius).then(function (results) {
+                clearResults();
+                clearMarkers();
                 // Create a marker for each hotel found, and
                 // assign a letter of the alphabetic to each marker icon.
-
                 for (var i = 0; i < results.length; i++) {
-                    // console.log('results[i].location', results[i].location);
-                    var markerLetter = String.fromCharCode('A'.charCodeAt(0) + (i % 26));
-                    var markerIcon = MARKER_PATH + markerLetter + '.png';
                     // Use marker animation to drop the icons incrementally on the map.
                     markers[i] = new google.maps.Marker({
-                        position: results[i].location,
+                        position: results[i].geometry.location,
                         animation: google.maps.Animation.DROP,
-                        // label: (i + 1).toString(),
-                        icon: markerIcon
+                        label: i.toString()
                     });
                     // If the user clicks a hotel marker, show the details of that hotel
                     // in an info window.
-
                     markers[i].placeResult = results[i];
-                    google.maps.event.addListener(markers[i], 'click', showInfoWindow);
-
-                    setTimeout(dropMarker(i), i * 50);
+                    google.maps.event.addListener(markers[i], 'click', showInfoWindow_new);
+                    setTimeout(dropMarker(i), i * 100);
                     addResult(results[i], i);
                 }
 
@@ -280,16 +239,14 @@
                 console.log('results: ', results);
                 var start = { latitude: location.lat, longitude: location.lng };
                 var arr = hotelService.getHotelsPositionByDistance(start, radius).then(function (localPosition) {
+
                     console.log('localPosition: ', (localPosition.results));
                     for (var i = results.length; i < results.length + localPosition.results.length; i++) {
-                        var markerLetter = String.fromCharCode('A'.charCodeAt(0) + (i % 26));
-                        var markerIcon = MARKER_PATH + markerLetter + '.png';
                         var latLng = {
                             lat: localPosition.results[i - results.length].location.latitude,
                             lng: localPosition.results[i - results.length].location.longitude,
                         }
                         console.log(latLng);
-                        // Use marker animation to drop the icons incrementally on the map.
                         markers[i] = new google.maps.Marker({
                             position: latLng,
                             animation: google.maps.Animation.DROP,
@@ -298,13 +255,10 @@
                             // icon: markerIcon
                         });
 
-                        // If the user clicks a hotel marker, show the details of that hotel
-                        // in an info window.
                         markers[i].placeResult = localPosition.results[i - results.length];
                         google.maps.event.addListener(markers[i], 'click', showInfoWindow);
-                        setTimeout(dropMarker(i), i * 50);
-                        console.log('localPosition.results.location[i - results.length]: ', localPosition.results[i - results.length].location);
-                        addResult(localPosition.results[i - results.length], i - results.length);
+                        setTimeout(dropMarker(i), i * 100);
+                        addResult(localPosition.results[i - results.length], i);
                     }
                 });
             });
@@ -333,32 +287,33 @@
         }
         //display list hotels
         function addResult(result, i) {
-            // console.log('result i: ' + JSON.stringify(result) );
-            var results = document.getElementById('results');
-            var markerLetter = String.fromCharCode('A'.charCodeAt(0) + (i % 26));
-            var markerIcon = MARKER_PATH + markerLetter + '.png';
 
             var tr = document.createElement('tr');
-            tr.style.backgroundColor = (i % 2 === 0 ? '#F0F0F0' : '#FFFFFF');
+            tr.style.backgroundColor = (i % 2 === 0 ? '#d4ffeb' : '#fbfbfb');
             tr.onclick = function () {
                 google.maps.event.trigger(markers[i], 'click');
             };
+
             var iconTd = document.createElement('td');
-            var nameTd = document.createElement('td');
-            // var ratingTd = document.createElement('td');
             var icon = document.createElement('img');
-            icon.src = markerIcon;
+            icon.src = '/src/client/assets/images/hotel_icon.png';
             // icon.setAttribute('class', 'placeIcon');
             // icon.setAttribute('className', 'placeIcon');
+
+            var sttTd = document.createElement('td');
+            var nameTd = document.createElement('td');
+            
             var name = document.createTextNode(result.name);
-            // var rating = document.createTextNode(result.rating);
-            //result.photos[0].getUrl({'maxWidth': 35, 'maxHeight': 35})
+            var stt = document.createTextNode(i.toString());
+            
             iconTd.appendChild(icon);
+            sttTd.appendChild(stt);
             nameTd.appendChild(name);
-            // ratingTd.appendChild(rating);
+
             tr.appendChild(iconTd);
+            tr.appendChild(sttTd);
             tr.appendChild(nameTd);
-            // tr.appendChild(ratingTd);
+            
             results.appendChild(tr);
         }
 
@@ -366,18 +321,32 @@
         // anchored on the marker for the hotel that the user selected.
         function showInfoWindow() {
             var marker = this;
-            // places.getDetails({ placeId: marker.placeResult.place_id },
-            //     function (place, status) {
-            //         if (status !== google.maps.places.PlacesServiceStatus.OK) {
-            //             return;
-            //         }
-            
             infoWindow.open(map, marker);
             //To directions
             directionsSv.setDestination(marker.placeResult.location);
             buildIWContent(marker.placeResult);
             console.log();
-            // });
+        }
+
+        function showInfoWindow_new() {
+            var marker = this;
+            places.getDetails({ placeId: marker.placeResult.place_id },
+                function (place, status) {
+                    if (status !== google.maps.places.PlacesServiceStatus.OK) {
+                        return;
+                    }
+                    infoWindow.open(map, marker);
+                    var myResult = {
+                        name: place.name,
+                        address: place.vicinity,
+                        location: place.geometry.location,
+                        phone: place.formatted_phone_number,
+                        website: place.website,
+                        type: place.type,
+                        rating: place.rating,
+                    }
+                    buildIWContent(myResult);
+                });
         }
 
         // Load the place information into the HTML elements used by the info window.
