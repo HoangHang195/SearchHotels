@@ -108,6 +108,8 @@
                     displayHotelsPosition(latLng, myRadius);
                     //To direct 
                     directionsSv.setOrigin(place.geometry.location);
+                    console.log('listhotel directionsSv.getOrigin', JSON.stringify(directionsSv.getOrigin()) );
+                    console.log('listhotel place.geometry.location', JSON.stringify(place.geometry.location) );
                 } else {
                     document.getElementById('autocomplete').placeholder = 'Enter a city';
                 }
@@ -132,22 +134,22 @@
                     // clearMarkers();
                 });
 
-            document.getElementById('radius').addEventListener(
-                'change', function setRadius() {
-                    var radius = document.getElementById('radius').value;
-                    if (radius === '500') {
-                        myRadius = 500;
-                    } else if (radius === '1000') {
-                        myRadius = 1000;
-                    } else if (radius === '2000') {
-                        myRadius = 2000;
-                    } else if (radius === '3000') {
-                        myRadius = 3000;
-                    } else {
-                        myRadius = 4000;
-                    }
+            // document.getElementById('radius').addEventListener(
+            //     'change', function setRadius() {
+            //         var radius = document.getElementById('radius').value;
+            //         if (radius === '500') {
+            //             myRadius = 500;
+            //         } else if (radius === '1000') {
+            //             myRadius = 1000;
+            //         } else if (radius === '2000') {
+            //             myRadius = 2000;
+            //         } else if (radius === '3000') {
+            //             myRadius = 3000;
+            //         } else {
+            //             myRadius = 4000;
+            //         }
 
-                });
+            //     });
 
             var userPosition = getUserCurrentPosition().then(function (pos) {
 
@@ -323,6 +325,7 @@
             var marker = this;
             infoWindow.open(map, marker);
             //To directions
+            console.log('destination ', (marker.placeResult.location));
             directionsSv.setDestination(marker.placeResult.location);
             buildIWContent(marker.placeResult);
             console.log();
@@ -330,6 +333,7 @@
 
         function showInfoWindow_new() {
             var marker = this;
+            
             places.getDetails({ placeId: marker.placeResult.place_id },
                 function (place, status) {
                     if (status !== google.maps.places.PlacesServiceStatus.OK) {
@@ -346,6 +350,8 @@
                         rating: place.rating,
                     }
                     buildIWContent(myResult);
+                    //to directions 
+                    directionsSv.setDestination(myResult.location);
                 });
         }
 
