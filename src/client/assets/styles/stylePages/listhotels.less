@@ -1,57 +1,64 @@
 
-#map {
+#listHotels #map {
     height: 525px;
     // width: 100%;
     overflow-y: scroll;
-    // float: right;
+    float: right;
   }
   /* Optional: Makes the sample page fill the window. */
 
-  table {
+#listHotels table {
     font-size: 15px;
     font-weight: 500;
     background-color: beige;
   }
-  
-#listing {
+
+#listHotels #listing {
     height: 525px;
     overflow-y: scroll;
-    // float: left;
+    float: left;
   }
 
-#listing #resultsTable{
+#listHotels #listing #resultsTable{
   width: 100%;
 }
 
-#searchBar #custom-search-input {
+#listHotels #searchBar #custom-search-input {
     margin:0;
     margin-top: 10px;
     padding: 0;
 }
-#searchBar #controls #country{
+#listHotels #searchBar #controls #country{
   height: 34px;
   border-radius: 3px;
 }
-#searchBar #controls{
+#listHotels #searchBar #controls{
   float: left;
+  padding-left: 0px!important;
+  padding-right: 0px!important;
 }
-#searchBar #radius-controls{
+#listHotels #searchBar #controls select{
+    width: 100%;
+}
+#listHotels #searchBar #radius-controls{
     float: left;
 }
-#searchBar #custom-search-input button {
+#listHotels #searchBar #custom-search-input button {
     border-radius: 3px;
     color:black;
 }
 
-#info-content table {
+#listHotels #info-content table {
 }
 
 /* PC DISPLAY*/
 
-@media only screen 
+@media only screen
 and (max-device-width: 768px) {
     #layoutContainer{
         width: 100%;
+    }
+    #listHotels #map{
     }
 }
 
@@ -59,7 +66,7 @@ and (max-device-width: 768px) {
 /* PHONE DISPLAY*/
 
 @media only screen
-and (max-device-width: 767px) 
+and (max-device-width: 767px)
 and (min-device-width: 300px){
     #layoutHeader #brand span{
         font-size: 30px;
@@ -67,5 +74,5 @@ and (min-device-width: 300px){
     #layoutHeader img{
         margin-top: 10px;
     }
-    
+
 }

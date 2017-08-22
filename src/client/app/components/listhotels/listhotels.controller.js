@@ -108,8 +108,8 @@
                     displayHotelsPosition(latLng, myRadius);
                     //To direct 
                     directionsSv.setOrigin(place.geometry.location);
-                    console.log('listhotel directionsSv.getOrigin', JSON.stringify(directionsSv.getOrigin()) );
-                    console.log('listhotel place.geometry.location', JSON.stringify(place.geometry.location) );
+                    console.log('listhotel directionsSv.getOrigin', JSON.stringify(directionsSv.getOrigin()));
+                    console.log('listhotel place.geometry.location', JSON.stringify(place.geometry.location));
                 } else {
                     document.getElementById('autocomplete').placeholder = 'Enter a city';
                 }
@@ -139,20 +139,29 @@
             //         var radius = document.getElementById('radius').value;
             //         if (radius === '500') {
             //             myRadius = 500;
+            //             map.setZoom(17);
+            //             displayHotelsPosition(latLng, myRadius);
             //         } else if (radius === '1000') {
             //             myRadius = 1000;
+            //             map.setZoom(15);
+            //             displayHotelsPosition(latLng, myRadius);
             //         } else if (radius === '2000') {
             //             myRadius = 2000;
+            //             map.setZoom(14);
+            //             displayHotelsPosition(latLng, myRadius);
             //         } else if (radius === '3000') {
             //             myRadius = 3000;
+            //             map.setZoom(13);
+            //             displayHotelsPosition(latLng, myRadius);
             //         } else {
             //             myRadius = 4000;
+            //             map.setZoom(12);
+            //             displayHotelsPosition(latLng, myRadius);
             //         }
-
             //     });
 
             var userPosition = getUserCurrentPosition().then(function (pos) {
-
+                map.setCenter(pos);
                 markerUserPosition(map, pos);
                 displayHotelsPosition(pos, myRadius);
                 //To direct
@@ -254,7 +263,6 @@
                             animation: google.maps.Animation.DROP,
                             label: (i - results.length + 1).toString(),
                             map: map
-                            // icon: markerIcon
                         });
 
                         markers[i].placeResult = localPosition.results[i - results.length];
@@ -304,10 +312,10 @@
 
             var sttTd = document.createElement('td');
             var nameTd = document.createElement('td');
-            
+
             var name = document.createTextNode(result.name);
             var stt = document.createTextNode(i.toString());
-            
+
             iconTd.appendChild(icon);
             sttTd.appendChild(stt);
             nameTd.appendChild(name);
@@ -315,7 +323,7 @@
             tr.appendChild(iconTd);
             tr.appendChild(sttTd);
             tr.appendChild(nameTd);
-            
+
             results.appendChild(tr);
         }
 
@@ -328,12 +336,11 @@
             console.log('destination ', (marker.placeResult.location));
             directionsSv.setDestination(marker.placeResult.location);
             buildIWContent(marker.placeResult);
-            console.log();
         }
 
         function showInfoWindow_new() {
             var marker = this;
-            
+
             places.getDetails({ placeId: marker.placeResult.place_id },
                 function (place, status) {
                     if (status !== google.maps.places.PlacesServiceStatus.OK) {
@@ -419,11 +426,11 @@
                             resolve(results[1].formatted_address);
                         } else {
                             window.alert('No results found');
-                            reject(null);
+                            reject('No results found');
                         }
                     } else {
                         window.alert('Geocoder failed due to: ' + status);
-                        reject(null);
+                        reject('Geocoder failed due to: ' + status);
                     }
                 });
             });

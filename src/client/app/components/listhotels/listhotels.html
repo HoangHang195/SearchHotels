@@ -1,4 +1,4 @@
-<div ng-controller="ListHotelsController" id="listHotels">
+<div ng-controller="ListHotelsController" id="listHotels" class="col-md-12 col-sm-12 col-xs-12">
     <!--data-ng-init='vm.loadCurrentPosition()'-->
     <!--<div infinite-scroll='vm.loadMore()' infinite-scroll-distance='1' class="scroll">
         <img ng-repeat='image in vm.images' ng-src='http://placehold.it/225x250&text={{image}}'>
@@ -8,7 +8,7 @@
         <!--<div id="locationField">
             <input id="autocomplete" placeholder="Enter a city" type="text" />
         </div>-->
-        <div id="controls" class="col-md-2 col-sm-2 col-xs-5">
+        <div id="controls" class="col-md-1 col-sm-2 col-xs-3">
             <select id="country">
                 <option value="all">All</option>
                 <option value="vn" selected >Việt Nam</option>
@@ -28,7 +28,7 @@
             </select>
         </div>
 
-        <div class="input-group col-md-7 col-sm-8 col-xs-8">
+        <div class="input-group col-md-6 col-sm-10 col-xs-12">
             <input id="autocomplete" type="text" class="search-query form-control" ng-enter="vm.onPlaceChanged()" placeholder="Nhập địa điểm cần tìm kiếm"
             />
             <span class="input-group-btn" ui-sref-active="active">
@@ -37,6 +37,7 @@
             </button>
             </span>
         </div>
+
         <!--<div class="col-md-2" id="radius-controls">
             <select id="radius">
                 <option value="500">500</option>
@@ -47,14 +48,14 @@
         </div>-->
 
     </div>
-
+    <div id="map" class="col-md-7 col-sm-7 col-xs-12"></div>
     <div id="listing" class="col-md-5 col-sm-5 col-xs-12">
         <table id="resultsTable">
             <tbody id="results"></tbody>
         </table>
     </div>
 
-    <div id="map" class="col-md-7 col-sm-7 col-xs-12"></div>
+    
 
     <div style="display: none">
 <div id="info-content">
